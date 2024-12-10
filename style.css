@@ -1,0 +1,92 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f9;
+}
+
+.game-container {
+    text-align: center;
+    padding: 20px;
+}
+
+.room {
+    position: relative;
+    width: 400px;
+    height: 300px;
+    margin: 0 auto;
+    background-color: #e0e0e0;
+    border: 3px solid #333;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.wall {
+    position: absolute;
+    background-color: #444;
+}
+
+.top {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 20px;
+}
+
+.left {
+    top: 0;
+    left: 0;
+    width: 20px;
+    height: 100%;
+}
+
+.right {
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+}
+
+.door {
+    position: absolute;
+    bottom: 20px;
+    right: 120px;
+    width: 60px;
+    height: 100px;
+    background-color: brown;
+    cursor: pointer;
+}
+
+.table {
+    position: absolute;
+    top: 100px;
+    left: 150px;
+    width: 100px;
+    height: 50px;
+    background-color: #8b5e3c;
+    cursor: pointer;
+}
+
+.dialog-box {
+    position: absolute;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #fff;
+    border: 2px solid #333;
+    padding: 10px;
+    display: none;
+    width: 300px;
+    text-align: center;
+}
+
+.game-message {
+    font-size: 1.2em;
+    margin-top: 20px;
+    color: green;
+}

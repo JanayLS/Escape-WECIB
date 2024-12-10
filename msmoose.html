@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini-Quest Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    #game-container {
+      width: 80%;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    #dialogue-box {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+
+    #actions {
+      margin-top: 20px;
+    }
+
+    .button {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    #room-image {
+      max-width: 100%;
+      height: auto;
+      margin-top: 20px;
+    }
+
+    .gem {
+      width: 30px;
+      height: 30px;
+      background-color: gold;
+      border-radius: 50%;
+      display: inline-block;
+      margin: 10px;
+      cursor: pointer;
+    }
+    
+    .hidden-key {
+      width: 50px;
+      height: 50px;
+      background-color: brown;
+      display: inline-block;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    .ghost {
+      width: 40px;
+      height: 40px;
+      background-color: grey;
+      border-radius: 50%;
+      margin: 20px;
+      cursor: pointer;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <div id="dialogue-box">Welcome to Ms. Moose's Room! Our dear counselor is here to help us solving 4 different scheduling issues. Good luck!</div>
+    <img id="room-image" src="room-removebg-preview.png" alt="Room Image">
+    <div id="actions">
+      <button class="button" onclick="startQuest(1)">Start Quest 1</button>
+      <button class="button" onclick="startQuest(2)">Start Quest 2</button>
+      <button class="button" onclick="startQuest(3)">Start Quest 3</button>
+      <button class="button" onclick="startQuest(4)">Start Quest 4</button>
+    </div>
+  </div>
+
+  <script>
+    let currentQuest = 0;
+    let gemsCollected = 0;
+
+    const characters = {
+      helper: {
+        name: "Helper",
+        image: "https://via.placeholder.com/100?text=Helper",
+        dialogue: [
+          "Hello there! I need your help to find the hidden key in this room. It's somewhere nearby, but you'll have to search carefully.",
+          "Great job! You found the key! Now you can unlock the next challenge!"
+        ]
+      },
+      sage: {
+        name: "The Sage",
+        image: "https://via.placeholder.com/100?text=Sage",
+        dialogue: [
+          "Greetings, traveler. I have a riddle for you. What has keys but cannot open locks?",
+          "Correct! The answer is 'Piano'. You have solved my riddle!"
+        ]
+      },
+      ghost: {
+        name: "The Ghost",
+        image: "https://via.placeholder.com/100?text=Ghost",
+        dialogue: [
+          "I am trapped here, and I need help to find my way out. Could you speak with me?",
+          "Thank you, kind soul. Now I can rest. You've helped me escape this eternal wandering."
+        ]
+      },
+      merchant: {
+        name: "The Merchant",
+        image: "https://via.placeholder.com/100?text=Merchant",
+        dialogue: [
+          "Hello, adventurer! I’ve lost all my gems around this room. Can you collect them for me?",
+          "Excellent! You have collected all the gems! Thank you for your help."
+        ]
+      }
+    };
+
+    function updateDialogue(text) {
+      document.getElementById('dialogue-box').innerText = text;
+    }
+
+    function startQuest(questNumber) {
+      currentQuest = questNumber;
+      switch (questNumber) {
+        case 1:
+          updateDialogue(`${characters.helper.name}: "${characters.helper.dialogue[0]}"`);
+          displayCharacterImage(characters.helper.image);
+          document.getElementById('actions').innerHTML = `
+            <button class="button" onclick="findKey()">Search for the Key</button>
+          `;
+          break;
+        case 2:
+          updateDialogue(`${characters.sage.name}: "${characters.sage.dialogue[0]}"`);
+          displayCharacterImage(characters.sage.image);
+          document.getElementById('actions').innerHTML = `
+            <input type="text" id="riddle-answer" placeholder="Your answer">
+            <button class="button" onclick="submitRiddle()">Submit Answer</button>
+          `;
+          break;
+        case 3:
+          updateDialogue(`${characters.ghost.name}: "${characters.ghost.dialogue[0]}"`);
+          displayCharacterImage(characters.ghost.image);
+          document.getElementById('actions').innerHTML = `
+            <button class="button" onclick="talkToGhost()">Talk to the Ghost</button>
+          `;
+          break;
+        case 4:
+          updateDialogue(`${characters.merchant.name}: "${characters.merchant.dialogue[0]}"`);
+          displayCharacterImage(characters.merchant.image);
+          document.getElementById('actions').innerHTML = `
+            <div id="gems-container">
+              <div class="gem" onclick="collectGem()"></div>
+              <div class="gem" onclick="collectGem()"></div>
+              <div class="gem" onclick="collectGem()"></div>
+            </div>
+            <button class="button" onclick="checkGems()">Check Gems Collected</button>
+          `;
+          break;
+        default:
+          updateDialogue("Invalid quest.");
+          break;
+      }
+    }
+
+    function displayCharacterImage(imageUrl) {
+      document.getElementById('characters').innerHTML = `
+        <img src="${imageUrl}" class="character" alt="Character Image">
+      `;
+    }
+
+    // Quest 1: Find the Hidden Key
+    function findKey() {
+      updateDialogue(`${characters.helper.name}: "${characters.helper.dialogue[1]}"`);
+      resetGame();
+    }
+
+    // Quest 2: Solve the Riddle
+    function submitRiddle() {
+      const answer = document.getElementById('riddle-answer').value.toLowerCase();
+      if (answer === 'piano') {
+        updateDialogue(`${characters.sage.name}: "${characters.sage.dialogue[1]}"`);
+        resetGame();
+      } else {
+        updateDialogue(`${characters.sage.name}: 'That's not it. Try again! What has keys but cannot open locks?'`);
+      }
+    }
+
+    // Quest 3: Talk to the Ghost
+    function talkToGhost() {
+      updateDialogue(`${characters.ghost.name}: "${characters.ghost.dialogue[1]}"`);
+      resetGame();
+    }
+
+    // Quest 4: Collect Gems
+    function collectGem() {
+      gemsCollected++;
+      updateDialogue(`You have collected ${gemsCollected} gem(s).`);
+    }
+
+    function checkGems() {
+      if (gemsCollected >= 3) {
+        updateDialogue(`${characters.merchant.name}: "${characters.merchant.dialogue[1]}"`);
+        resetGame();
+      } else {
+        updateDialogue(`${characters.merchant.name}: 'You still need to collect more gems. Please gather them all.'`);
+      }
+    }
+
+    // Reset after quest completion
+    function resetGame() {
+      currentQuest = 0;
+      gemsCollected = 0;
+      setTimeout(() => {
+        updateDialogue("You can now start a new quest!");
+        document.getElementById('actions').innerHTML = `
+          <button class="button" onclick="startQuest(1)">Start Quest 1</button>
+          <button class="button" onclick="startQuest(2)">Start Quest 2</button>
+          <button class="button" onclick="startQuest(3)">Start Quest 3</button>
+          <button class="button" onclick="startQuest(4)">Start Quest 4</button>
+        `;
+      }, 2000);
+    }
+  </script>
+</body>
+</html>
