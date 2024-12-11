@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Battle with Ms. Kween</title>
+    <style>
+        body {
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+            font-weight: 500;
+            text-align: center;
+            background-color: #0b2e53;
+            color: #ffffff;
+        }
+        #gameContainer {
+            display: none;
+            margin-top: 20px;
+        }
+        canvas {
+            border: 2px solid #000;
+            background-color: #ffffff;
+        }
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        #buttonContainer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 20px;
+            display: none;
+        }
+        .button {
+            padding: 10px 20px;
+            margin: 10px;
+            background-color: #0b2e53;
+            color: rgb(255, 255, 255);
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+        }
+        .button:hover {
+            background-color: #0056b3;
+        }
+        .health {
+            font-size: 20px;
+            margin: 10px;
+            color: #fff;
+        }
+        .sprite-selection {
+            margin-top: 20px;
+            color: #ffffff;
+        }
+        .sprite-selection img {
+            width: 50px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        .sprite-selection img.selected {
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 15px #FFD700;
+            transform: scale(1.1);
+        }
+        #weaponSelection img {
+            width: 50px;
+            margin: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+        }
+        #weaponSelection img.selected {
+            border: 3px solid #b60000;
+            box-shadow: 0 0 15px #b60000;
+            transform: scale(1.1);
+        }
+        .villain-intro {
+            background-color: #fff;
+            border: 2px solid #000;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: inline-block;
+            animation: fadeIn 2s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .villain-intro h1 {
+            color: #b22222;
+            animation: textGlow 1.5s infinite alternate;
+        }
+        @keyframes textGlow {
+            from { text-shadow: 0 0 10px #b22222; }
+            to { text-shadow: 0 0 20px #ff4500; }
+        }
+        .villain-intro p {
+            font-size: 1.2em;
+        }
+        .wizard-hat {
+            width: 100px;
+            height: auto;
+            animation: hatSpin 3s infinite linear;
+        }
+        @keyframes hatSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        #endScene {
+            text-align: center;
+            margin-top: 50px;
+            animation: fadeIn 2s ease-in-out;
+        }
+        #trophy {
+            width: 200px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-30px);
+            }
+            60% {
+                transform: translateY(-15px);
+            }
+        }
+        @keyframes attackFlash {
+            0% { color: red; text-shadow: 0 0 5px red; }
+            50% { color: yellow; text-shadow: 0 0 20px yellow; }
+            100% { color: red; text-shadow: 0 0 5px red; }
+        }
+
+        .attack-animation {
+            animation: attackFlash 1s ease-in-out;
+        }
+
+    </style>
+</head>
+<body>
+    <div id="endScene" style="display: none;">
+        <img src="trophy.png" alt="Trophy" id="trophy">
+        <h1>You Escaped English Class! Congratulations!</h1>
+        <audio id="happyMusic" loop>
+            <source src="/music/happy_music.mp3" type="audio/mpeg">
+            Your browser does not support the audio element.
+        </audio>
+        <div id="endButtonContainer">
+            <button id="playAgainButton" class="button" onclick="restartGame()">Play Again</button>
+            <button id="backToMenuButton" class="button" onclick="returnToMenu()">Back to Menu</button>
+        </div>
+                </div>
+            </div>
+            <div class="villain-intro">
+                <img src="wizard_hat.png" alt="Wizard Hat" class="wizard-hat">
+                <h1>Meet Ms. Kween</h1>
+                <p style="color: #0b2e53;">Beware, students of English! Ms. Kween, the goose in a wizard hat, has arrived to teach you the dark arts of grammar and punctuation. Her lessons are as sharp as her beak, and her spells can turn your essays into gibberish!</p>
+                <button class="button" onclick="startGame()">Start Battle</button>
+            </div>
+            
+            <div id="spriteSelection" class="sprite-selection">
+                <h3>Choose your sprite:</h3>
+                <img src="sprites/blue.png" alt="Player Sprite 1" onclick="changePlayerSprite('sprites/blue.png')">
+                <img src="sprites/pink.png" alt="Player Sprite 2" onclick="changePlayerSprite('sprites/pink.png')">
+                <img src="sprites/brown.png" alt="Player Sprite 3" onclick="changePlayerSprite('sprites/brown.png')">
+                
+                <h3>Choose your weapon:</h3>
+                <div id="weaponSelection">
+                    <img src="weapons/Sword.png" alt="Sword" onclick="selectWeapon('weapons/Sword.png', 'Sword')">
+                    <img src="weapons/Axe.png" alt="Axe" onclick="selectWeapon('weapons/Axe.png', 'Axe')">
+                    <img src="weapons/Spear.png" alt="Spear" onclick="selectWeapon('weapons/Spear.png', 'Spear')">
+                </div>
+            </div>
+            
+            <div id="gameContainer">
+                <h2>Battle with Ms. Kween!</h2>
+                <div id="playerHealth" class="health">Your Health: 100</div>
+                <div id="msKweenHealth" class="health">Ms. Kween's Health: 100</div>
+                
+                <canvas id="battleCanvas" width="800" height="400"></canvas>
+                
+                <p id="attackDescription"></p>
+                <div id="attackButtons">
+                    <br><br><br><strong><label style="font-size: larger;align-items: center; color: #fff;">Attacks</label></strong><br><br><br>
+                    <button class="button" onclick="playerAttack('Opposite Opinion than Ms.Kween')">Opposite Opinion than Ms.Kween</button>
+                    <button class="button" onclick="playerAttack('Tornado Spin')">Tornado Spin</button>
+                    <button class="button" onclick="playerAttack('Shadow Strike')">Shadow Strike</button>
+                </div>
+                <button class="button" onclick="defend()">Defend</button>
+                
+                <div id="result"></div>
+                <div id="buttonContainer">
+                    <button id="playAgainButton" class="button" onclick="restartGame()">Play Again</button>
+                    <button id="backToMenuButton" class="button" onclick="returnToMenu()">Back to Menu</button>
+                </div>
+                <audio id="background-music" autoplay loop>
+                    <source src="/music/background-music.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+                
+                <audio id="happyMusic" loop>
+                    <source src="/music/happy_music.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+            
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    const intro = document.querySelector('.villain-intro');
+                    intro.style.transition = 'transform 0.5s ease-in-out';
+                    intro.style.transform = 'scale(1.1)';
+                    setTimeout(() => {
+                        intro.style.transform = 'scale(1)';
+                    }, 500);
+                });
+        
+                let playerHealth = 100;
+                let msKweenHealth = 120;
+                let gameStarted = false;
+                let playerSprite = "sprites/blue.png"; // Default sprite
+                let playerWeapon = { sprite: "weapons/Sword.png", name: "Sword" }; // Default weapon
+                let msKweenSprite = "sprites/msKween.png"; // Ms. Kween's sprite
+                const attacks = [
+                    "She touches your hair without permission.",
+                    "She says 'I am black.'",
+                    "She claims 'I am the most well-paid teacher in the school.'",
+                    "She talks while you're taking the ACT.",
+                    "She sticks your AirPod in her ear.",
+                    "She says, 'I will eat you.'", 
+                    "She says, 'I will eat your AirPods.'",
+                    "She threatens to beat you with a ruler.",
+                    "She says, 'You guys are sitting there like turds in a toilet.'",
+                    "She says, 'I will fight you to the death.'"
+                ];
+                const canvas = document.getElementById('battleCanvas');
+                const ctx = canvas.getContext('2d');
+                const player = {
+                    x: 100,
+                    y: 300,
+                    width: 110,
+                    height: 110,
+                    sprite: playerSprite,
+                    defaultX: 100,
+                    defaultY: 300
+                };
+                const msKween = {
+                    x: 650,
+                    y: 300,
+                    width: 100,
+                    height: 100,
+                    sprite: msKweenSprite,
+                    defaultX: 650,
+                    defaultY: 300
+                };
+        
+                function changePlayerSprite(spriteUrl) {
+                    player.sprite = spriteUrl;
+                    const spriteImages = document.querySelectorAll('.sprite-selection img');
+                    spriteImages.forEach(img => img.classList.remove('selected'));
+                    const selectedImage = Array.from(spriteImages).find(img => img.src.includes(spriteUrl));
+                    if (selectedImage) selectedImage.classList.add('selected');
+                    drawScene();
+                }
+        
+                function startGame() {
+                    gameStarted = true;
+                    document.querySelector('.villain-intro').style.display = 'none';
+                    document.getElementById('spriteSelection').style.display = 'none';
+                    document.getElementById('gameContainer').style.display = 'block';
+                    document.getElementById('result').innerText = "";
+                    document.querySelector('.button').style.display = 'none';
+                    if (player.sprite === "sprites/brown.png") {
+                        player.sprite = "sprites/brown_front.png";
+                    } else if (player.sprite === "sprites/pink.png") {
+                        player.sprite = "sprites/pink_front.png";
+                    } else if (player.sprite === "sprites/blue.png") {
+                        player.sprite = "sprites/blue_front.png";
+                    }
+                    player.width = 110;
+                    player.height = 110;
+                    drawScene();
+                }
+        
+                function playerAttack(attackType) {
+                    if (gameStarted) {
+                        let damage;
+                        switch (attackType) {
+                            case 'Opposite Opinion than Ms.Kween':
+                                damage = Math.floor(Math.random() * 10) + 5; // Random damage between 5 and 15
+                                break;
+                            case 'Tornado Spin':
+                                damage = Math.floor(Math.random() * 15) + 5; // Random damage between 5 and 20
+                                break;
+                            case 'Shadow Strike':
+                                damage = Math.floor(Math.random() * 20) + 5; // Random damage between 5 and 25
+                                break;
+                            default:
+                                damage = Math.floor(Math.random() * 10) + 5; // Default damage
+                        }
+                        msKweenHealth = Math.max(msKweenHealth - damage, 0);
+                        document.getElementById('msKweenHealth').innerText = `Ms. Kween's Health: ${msKweenHealth}`;
+                        document.getElementById('attackDescription').innerText = `You used ${attackType}! Ms. Kween lost ${damage} health.`;
+                        animateAttack('player');
+                        if (msKweenHealth <= 0) {
+                            msKweenDies();
+                        } else {
+                            msKweenAttacks();
+                        }
+                    }
+                }
+        
+                function msKweenAttacks() {
+                    let attackIndex = Math.floor(Math.random() * attacks.length);
+                    let damage = Math.floor(Math.random() * 20) + 5;
+                    playerHealth = Math.max(playerHealth - damage, 0);
+                    const attackDescription = document.getElementById('attackDescription');
+                    attackDescription.innerText = `Ms. Kween attacks: ${attacks[attackIndex]} You lost ${damage} health.`;
+                    attackDescription.classList.add('attack-animation');
+                    setTimeout(() => {
+                        attackDescription.classList.remove('attack-animation');
+                    }, 1000);
+                    document.getElementById('playerHealth').innerText = `Your Health: ${playerHealth}`;
+                    animateAttack('msKween');
+                    if (playerHealth <= 0) {
+                        gameOver(false);
+                    }
+                }
+
+                function defend() {
+                    if (gameStarted) {
+                        let heal = Math.floor(Math.random() * 15) + 5;
+                        playerHealth = Math.min(playerHealth + heal, 100);
+                        document.getElementById('playerHealth').innerText = `Your Health: ${playerHealth}`;
+                        document.getElementById('attackDescription').innerText = `You defended and healed for ${heal} health.`;
+                        animateDefend('player');
+                        msKweenAttacks();
+                    }
+                }
+        
+                function animateAttack(character) {
+                    let originalPlayerX = player.x;
+                    let originalMsKweenX = msKween.x;
+                    let playerAttackX = 200;
+                    let msKweenAttackX = 550;
+                    if (character === 'player') {
+                        player.x = playerAttackX;
+                        drawScene();
+                        setTimeout(() => {
+                            player.x = originalPlayerX;
+                            drawScene();
+                        }, 200);
+                    } else if (character === 'msKween') {
+                        msKween.x = msKweenAttackX;
+                        drawScene();
+                        setTimeout(() => {
+                            msKween.x = originalMsKweenX;
+                            drawScene();
+                        }, 200);
+                    }
+                }
+        
+                function animateDefend(character) {
+                    if (character === 'player') {
+                        player.width = 120;
+                        player.height = 120;
+                        drawScene();
+                        setTimeout(() => {
+                            player.width = 110;
+                            player.height = 110;
+                            drawScene();
+                        }, 200);
+                    } else if (character === 'msKween') {
+                        msKween.width = 120;
+                        msKween.height = 120;
+                        drawScene();
+                        setTimeout(() => {
+                            msKween.width = 100;
+                            msKween.height = 100;
+                            drawScene();
+                        }, 200);
+                    }
+                }
+        
+                function drawScene() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const background = new Image();
+                    background.src = "classroom.avif";
+                    background.onload = () => {
+                        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+                        const playerImage = new Image();
+                        playerImage.src = player.sprite;
+                        playerImage.onload = () => {
+                            const playerX = Math.min(Math.max(player.x, 0), canvas.width - player.width);
+                            const playerY = Math.min(Math.max(player.y - 40, 0), canvas.height - player.height);
+                            ctx.drawImage(playerImage, playerX, playerY, player.width, player.height);
+                            const weaponImage = new Image();
+                            weaponImage.src = playerWeapon.sprite;
+                            weaponImage.onload = () => {
+                                let weaponX = playerX + 70;
+                                let weaponY = playerY + 30;
+                                if (player.sprite.includes("left")) {
+                                    weaponX = playerX - 30;
+                                    weaponY = playerY + 30;
+                                } else if (player.sprite.includes("right")) {
+                                    weaponX = playerX + 50;
+                                    weaponY = playerY + 30;
+                                }
+                                ctx.drawImage(weaponImage, weaponX, weaponY, 60, 60);
+                            };
+                        };
+                        const msKweenImage = new Image();
+                        msKweenImage.src = msKween.sprite;
+                        msKweenImage.onload = () => {
+                            msKween.width = 120;
+                            msKween.height = 120;
+                            const msKweenY = Math.min(Math.max(msKween.y - 40, 0), canvas.height - msKween.height);
+                            ctx.drawImage(msKweenImage, msKween.x, msKweenY, msKween.width, msKween.height);
+                        };
+                    };
+                }
+
+                function restartGame() {
+                    playerHealth = 100;
+                    msKweenHealth = 100;
+                    gameStarted = true;
+
+                    // Reset health display
+                    document.getElementById('playerHealth').innerText = `Your Health: ${playerHealth}`;
+                    document.getElementById('msKweenHealth').innerText = `Ms. Kween's Health: ${msKweenHealth}`;
+                    document.getElementById('result').innerText = "";
+                    document.getElementById('attackDescription').innerText = "";
+
+                    // Reset sprite sizes
+                    player.width = 110;
+                    player.height = 110;
+                    msKween.width = 100;
+                    msKween.height = 100;
+
+                    // Hide end scene
+                    document.getElementById('endScene').style.display = 'none';
+
+                    // Show game container
+                    document.getElementById('gameContainer').style.display = 'block';
+
+                    drawScene();
+                }
+
+                function returnToMenu() {
+                    // Reset the game
+                    restartGame();
+
+                    // Hide end scene
+                    document.getElementById('endScene').style.display = 'none';
+
+                    // Show the menu
+                    document.getElementById('gameContainer').style.display = 'none';
+                    document.getElementById('spriteSelection').style.display = 'block';
+                    document.querySelector('.villain-intro').style.display = 'block';
+
+                    // Show the Start Battle button again
+                    document.querySelector('button[onclick="startGame()"]').style.display = 'inline-block';
+                }
+
+                function selectWeapon(spriteUrl, weaponName) {
+                    playerWeapon.sprite = spriteUrl;
+                    playerWeapon.name = weaponName;
+                    const weaponImages = document.querySelectorAll('#weaponSelection img');
+                    weaponImages.forEach(img => img.classList.remove('selected'));
+                    const selectedImage = Array.from(weaponImages).find(img => img.src.includes(spriteUrl));
+                    if (selectedImage) selectedImage.classList.add('selected');
+                }
+
+                function msKweenDies() {
+                    gameStarted = false;
+                    document.getElementById('result').innerText = "You defeated Ms. Kween!";
+                    msKweenHealth = 0;
+                    document.getElementById('msKweenHealth').innerText = `Ms. Kween's Health: ${msKweenHealth}`;
+                    let scaleFactor = 1;
+                    function shrinkMsKween() {
+                        if (scaleFactor > 0) {
+                            scaleFactor -= 0.05;
+                            msKween.width = 120 * scaleFactor;
+                            msKween.height = 120 * scaleFactor;
+                            drawScene();
+                            requestAnimationFrame(shrinkMsKween);
+                        } else {
+                            showEndScene();
+                        }
+                    }
+                    shrinkMsKween();
+                }
+
+                function showEndScene() {
+                    // Hide existing elements
+                    document.querySelector('.villain-intro').style.display = 'none';
+                    document.getElementById('spriteSelection').style.display = 'none';
+                    document.getElementById('gameContainer').style.display = 'none';
+
+                    // Show the end scene
+                    const endScene = document.getElementById('endScene');
+                    endScene.style.display = 'block';
+
+                    // Play happy music
+                    const happyMusic = document.getElementById('happyMusic');
+                    happyMusic.play();
+                }
+
+                function gameOver(playerWon) {
+                    gameStarted = false;
+                    if (playerWon) {
+                        showEndScene();
+                    } else {
+                        document.getElementById('result').innerText = "Ms. Kween defeated you. Better luck next time!";
+                        document.getElementById('playerHealth').innerText = "Your Health: 0";
+                        document.getElementById('msKweenHealth').innerText = "Ms. Kween's Health: 0";
+                        setTimeout(() => {
+                            document.getElementById('buttonContainer').style.display = 'flex';
+                        }, 1000);
+                    }
+                }
+
+                function playerAttack() {
+                    if (gameStarted) {
+                        let damage = Math.floor(Math.random() * 20) + 5;
+                        msKweenHealth = Math.max(msKweenHealth - damage, 0);
+                        document.getElementById('msKweenHealth').innerText = `Ms. Kween's Health: ${msKweenHealth}`;
+                        document.getElementById('attackDescription').innerText = `You attacked Ms. Kween! She lost ${damage} health.`;
+                        animateAttack('player');
+                        if (msKweenHealth <= 0) {
+                            msKweenDies();
+                        } else {
+                            msKweenAttacks();
+                        }
+                    }
+                }
+
+                function msKweenAttacks() {
+                    let attackIndex = Math.floor(Math.random() * attacks.length);
+                    let damage = Math.floor(Math.random() * 20) + 5;
+                    playerHealth = Math.max(playerHealth - damage, 0);
+                    document.getElementById('playerHealth').innerText = `Your Health: ${playerHealth}`;
+                    document.getElementById('attackDescription').innerText = `Ms. Kween attacks: ${attacks[attackIndex]} You lost ${damage} health.`;
+                    animateAttack('msKween');
+                    if (playerHealth <= 0) {
+                        gameOver(false);
+                    }
+                }
+
+                function defend() {
+                    if (gameStarted) {
+                        let heal = Math.floor(Math.random() * 15) + 5;
+                        playerHealth = Math.min(playerHealth + heal, 100);
+                        document.getElementById('playerHealth').innerText = `Your Health: ${playerHealth}`;
+                        document.getElementById('attackDescription').innerText = `You defended and healed for ${heal} health.`;
+                        animateDefend('player');
+                        msKweenAttacks();
+                    }
+                }
+
+                function animateAttack(character) {
+                    let originalPlayerX = player.x;
+                    let originalMsKweenX = msKween.x;
+                    let playerAttackX = 200;
+                    let msKweenAttackX = 550;
+                    if (character === 'player') {
+                        player.x = playerAttackX;
+                        drawScene();
+                        setTimeout(() => {
+                            player.x = originalPlayerX;
+                            drawScene();
+                        }, 200);
+                    } else if (character === 'msKween') {
+                        msKween.x = msKweenAttackX;
+                        drawScene();
+                        setTimeout(() => {
+                            msKween.x = originalMsKweenX;
+                            drawScene();
+                        }, 200);
+                    }
+                }
+
+                function animateDefend(character) {
+                    if (character === 'player') {
+                        player.width = 120;
+                        player.height = 120;
+                        drawScene();
+                        setTimeout(() => {
+                            player.width = 110;
+                            player.height = 110;
+                            drawScene();
+                        }, 200);
+                    } else if (character === 'msKween') {
+                        msKween.width = 120;
+                        msKween.height = 120;
+                        drawScene();
+                        setTimeout(() => {
+                            msKween.width = 100;
+                            msKween.height = 100;
+                            drawScene();
+                        }, 200);
+                    }
+                }
+
+                function drawScene() {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    const background = new Image();
+                    background.src = "classroom.avif";
+                    background.onload = () => {
+                        ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+                        const playerImage = new Image();
+                        playerImage.src = player.sprite;
+                        playerImage.onload = () => {
+                            const playerX = Math.min(Math.max(player.x, 0), canvas.width - player.width);
+                            const playerY = Math.min(Math.max(player.y - 40, 0), canvas.height - player.height);
+                            ctx.drawImage(playerImage, playerX, playerY, player.width, player.height);
+                            const weaponImage = new Image();
+                            weaponImage.src = playerWeapon.sprite;
+                            weaponImage.onload = () => {
+                                let weaponX = playerX + 70;
+                        let weaponY = playerY + 30;
+                        if (player.sprite.includes("left")) {
+                            weaponX = playerX - 30;
+                            weaponY = playerY + 30;
+                        } else if (player.sprite.includes("right")) {
+                            weaponX = playerX + 50;
+                            weaponY = playerY + 30;
+                        }
+                        ctx.drawImage(weaponImage, weaponX, weaponY, 60, 60);
+                    };
+                };
+                const msKweenImage = new Image();
+                msKweenImage.src = msKween.sprite;
+                msKweenImage.onload = () => {
+                    msKween.width = 120;
+                    msKween.height = 120;
+                    const msKweenY = Math.min(Math.max(msKween.y - 40, 0), canvas.height - msKween.height);
+                    ctx.drawImage(msKweenImage, msKween.x, msKweenY, msKween.width, msKween.height);
+                };
+            };
+        }
+
+        function restartGame() {
+            playerHealth = 100;
+            msKweenHealth = 100;
+            gameStarted = true;
+
+            // Reset health display
+            document.getElementById('playerHealth').innerText = `Your Health: ${playerHealth}`;
+            document.getElementById('msKweenHealth').innerText = `Ms. Kween's Health: ${msKweenHealth}`;
+            document.getElementById('result').innerText = "";
+            document.getElementById('attackDescription').innerText = "";
+
+            // Reset sprite sizes
+            player.width = 110;
+            player.height = 110;
+            msKween.width = 100;
+            msKween.height = 100;
+
+            // Hide end scene
+            document.getElementById('endScene').style.display = 'none';
+
+            // Show game container
+            document.getElementById('gameContainer').style.display = 'block';
+
+            drawScene();
+        }
+
+        function returnToMenu() {
+            // Reset the game
+            restartGame();
+
+            // Hide end scene
+            document.getElementById('endScene').style.display = 'none';
+
+            // Show the menu
+            document.getElementById('gameContainer').style.display = 'none';
+            document.getElementById('spriteSelection').style.display = 'block';
+            document.querySelector('.villain-intro').style.display = 'block';
+
+            // Show the Start Battle button again
+            document.querySelector('button[onclick="startGame()"]').style.display = 'inline-block';
+        }
+
+        function selectWeapon(spriteUrl, weaponName) {
+            playerWeapon.sprite = spriteUrl;
+            playerWeapon.name = weaponName;
+            const weaponImages = document.querySelectorAll('#weaponSelection img');
+            weaponImages.forEach(img => img.classList.remove('selected'));
+            const selectedImage = Array.from(weaponImages).find(img => img.src.includes(spriteUrl));
+            if (selectedImage) selectedImage.classList.add('selected');
+        }
+
+        function msKweenDies() {
+            gameStarted = false;
+            document.getElementById('result').innerText = "You defeated Ms. Kween!";
+            msKweenHealth = 0;
+            document.getElementById('msKweenHealth').innerText = `Ms. Kween's Health: ${msKweenHealth}`;
+            let scaleFactor = 1;
+            function shrinkMsKween() {
+                if (scaleFactor > 0) {
+                    scaleFactor -= 0.05;
+                    msKween.width = 120 * scaleFactor;
+                    msKween.height = 120 * scaleFactor;
+                    drawScene();
+                    requestAnimationFrame(shrinkMsKween);
+                } else {
+                    showEndScene();
+                }
+            }
+            shrinkMsKween();
+        }
+
+        function showEndScene() {
+            // Hide existing elements
+            document.querySelector('.villain-intro').style.display = 'none';
+            document.getElementById('spriteSelection').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'none';
+
+            // Show the end scene
+            const endScene = document.getElementById('endScene');
+            endScene.style.display = 'block';
+
+            // Play happy music
+            const happyMusic = document.getElementById('happyMusic');
+            happyMusic.play();
+        }
+
+        function gameOver(playerWon) {
+            gameStarted = false;
+            if (playerWon) {
+                showEndScene();
+            } else {
+                document.getElementById('result').innerText = "Ms. Kween defeated you. Better luck next time!";
+                document.getElementById('playerHealth').innerText = "Your Health: 0";
+                document.getElementById('msKweenHealth').innerText = "Ms. Kween's Health: 0";
+                setTimeout(() => {
+                    document.getElementById('buttonContainer').style.display = 'flex';
+                }, 1000);
+            }
+        }
+
+        function playerAttack() {
+            if (gameStarted) {
+                let damage = Math.floor(Math.random() * 20) + 5;
+                msKweenHealth = Math.max(msKweenHealth - damage, 0);
+                document.getElementById('msKweenHealth').innerText = `Ms. Kween's Health: ${msKweenHealth}`;
+                document.getElementById('attackDescription').innerText = `You attacked Ms. Kween! She lost ${damage} health.`;
+                animateAttack('player');
+                if (msKweenHealth <= 0) {
+                    msKweenDies();
+                } else {
+                    msKweenAttacks();
+                }
+            }
+        }
+
+        function msKweenAttacks() {
+            let attackIndex = Math.floor(Math.random() * attacks.length);
+            let damage = Math.floor(Math.random() * 20) + 5;
+            playerHealth = Math.max(playerHealth - damage, 0);
+            document.getElementById('playerHealth').innerText = `Your Health: ${playerHealth}`;
+            document.getElementById('attackDescription').innerText = `Ms. Kween attacks: ${attacks[attackIndex]} You lost ${damage} health.`;
+            animateAttack('msKween');
+            if (playerHealth <= 0) {
+                gameOver(false);
+            }
+        }
+
+        function defend() {
+            if (gameStarted) {
+                let heal = Math.floor(Math.random() * 15) + 5;
+                playerHealth = Math.min(playerHealth + heal, 100);
+                document.getElementById('playerHealth').innerText = `Your Health: ${playerHealth}`;
+                document.getElementById('attackDescription').innerText = `You defended and healed for ${heal} health.`;
+                animateDefend('player');
+                msKweenAttacks();
+            }
+        }
+
+        function animateAttack(character) {
+            let originalPlayerX = player.x;
+            let originalMsKweenX = msKween.x;
+            let playerAttackX = 200;
+            let msKweenAttackX = 550;
+            if (character === 'player') {
+                player.x = playerAttackX;
+                drawScene();
+                setTimeout(() => {
+                    player.x = originalPlayerX;
+                    drawScene();
+                }, 200);
+            } else if (character === 'msKween') {
+                msKween.x = msKweenAttackX;
+                drawScene();
+                setTimeout(() => {
+                    msKween.x = originalMsKweenX;
+                    drawScene();
+                }, 200);
+            }
+        }
+
+        function animateDefend(character) {
+            if (character === 'player') {
+                player.width = 120;
+                player.height = 120;
+                drawScene();
+                setTimeout(() => {
+                    player.width = 110;
+                    player.height = 110;
+                    drawScene();
+                }, 200);
+            } else if (character === 'msKween') {
+                msKween.width = 120;
+                msKween.height = 120;
+                drawScene();
+                setTimeout(() => {
+                    msKween.width = 100;
+                    msKween.height = 100;
+                    drawScene();
+                }, 200);
+            }
+        }
+
+        function drawScene() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const background = new Image();
+            background.src = "classroom.avif";
+            background.onload = () => {
+                ctx.drawImage(background, 0, 0, canvas.width, canvas.height);
+                const playerImage = new Image();
+                playerImage.src = player.sprite;
+                playerImage.onload = () => {
+                    const playerX = Math.min(Math.max(player.x, 0), canvas.width - player.width);
+                    const playerY = Math.min(Math.max(player.y - 40, 0), canvas.height - player.height);
+                    ctx.drawImage(playerImage, playerX, playerY, player.width, player.height);
+                    const weaponImage = new Image();
+                    weaponImage.src = playerWeapon.sprite;
+                    weaponImage.onload = () => {
+                        let weaponX = playerX + 70;
+                        let weaponY = playerY + 30;
+                        if (player.sprite.includes("left")) {
+                            weaponX = playerX - 30;
+                            weaponY = playerY + 30;
+                        } else if (player.sprite.includes("right")) {
+                            weaponX = playerX + 50;
+                            weaponY = playerY + 30;
+                        }
+                        ctx.drawImage(weaponImage, weaponX, weaponY, 60, 60);
+                    };
+                };
+                const msKweenImage = new Image();
+                msKweenImage.src = msKween.sprite;
+                msKweenImage.onload = () => {
+                    msKween.width = 120;
+                    msKween.height = 120;
+                    const msKweenY = Math.min(Math.max(msKween.y - 40, 0), canvas.height - msKween.height);
+                    ctx.drawImage(msKweenImage, msKween.x, msKweenY, msKween.width, msKween.height);
+                };
+            };
+        }
+    </script>
+</body>
+</html>
