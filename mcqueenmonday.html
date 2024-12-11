@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room 255</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000000;
+        }
+
+        .container {
+            position: relative;
+        }
+
+        .classroom {
+            z-index: 1;
+            position: relative;
+            max-width: 100%;
+        }
+
+        .dialouge {
+            z-index: 2;
+            position: absolute;
+            top: 85%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 80%;
+            display: none; /* Initially hidden */
+        }
+
+        h1 {
+            z-index: 2;
+            position: absolute;
+            top: 86.5%;
+            left: 79.5%;
+            transform: translate(-50%, -50%); 
+            max-width: 80%;
+            font-size: 10px;
+            display: none; /* Initially hidden */
+        }
+
+        #dialogueText {
+            z-index: 2;
+            position: absolute;
+            top: 77%;
+            left: 20%;
+            display: none; /* Initially hidden */
+            max-width: 50%;
+            text-align: left;
+        }
+
+        h2 {
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img class="classroom" src="map.png" alt="Classroom Background">
+        <img class="dialouge" id="dialogue" src="guiMcqueen.png" alt="Dialogue">
+        <h1 id="dialogueTitle">Mr. McQueen</h1>
+        <div id="dialogueText"></div>
+        <audio id="audio" src="ddlc.mp4" loop></audio>
+    </div>
+    
+    <script>
+        // Show the dialogue, title, and play audio after 5 seconds
+        setTimeout(() => {
+            document.getElementById('dialogue').style.display = 'block';
+            document.getElementById('dialogueTitle').style.display = 'block';
+            document.getElementById('audio').play();
+
+            // Populate dialogue text sequentially
+            const dialogueArray = [
+                'hello class',
+                'today we will be writing a program in python',
+                'The requirements for this program will be...'
+            ];
+
+            const dialogueText = document.getElementById('dialogueText');
+            dialogueText.style.display = 'block'; // Show the dialogue text
+
+            let index = 0;
+
+            function showNextDialogue() {
+                dialogueText.innerHTML = `<h2>${dialogueArray[index]}</h2>`;
+                index = (index + 1) % dialogueArray.length; // Loop back to start
+            }
+
+            showNextDialogue(); // Show the first line
+            document.addEventListener('click', () => {
+                showNextDialogue(); // Show the next dialogue when clicked
+            });
+        }, 1000);
+
+        // Make the dialogue disappear for 100 milliseconds when the mouse is clicked
+        document.addEventListener('click', () => {
+            const dialogue = document.getElementById('dialogue');
+            const dialogueTitle = document.getElementById('dialogueTitle');
+            const dialogueText = document.getElementById('dialogueText');
+
+            dialogue.style.display = 'none';
+            dialogueTitle.style.display = 'none';
+            dialogueText.style.display = 'none';
+
+            setTimeout(() => {
+                dialogue.style.display = 'block';
+                dialogueTitle.style.display = 'block';
+                dialogueText.style.display = 'block';
+            }, 100); // 100 milliseconds
+        });
+    </script>
+</body>
+</html>
