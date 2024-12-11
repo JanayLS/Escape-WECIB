@@ -6,6 +6,12 @@
 Your goal is to survive english class despite Ms.Kween's vicious attacks. Select a sprite and weapon. You can choose from 3 different attacks or you can defend. Defeat Ms.Kween and her hurtful words to survive one period of english class!
 
 _______________________________________________________________________________________________
+## Good luck with Ms. Moose
+Your goal is to attempt to have any of your issues solved by our dear counselor, Ms. Moose. At the very beginning, start by picking an avatar. That is who you will be. You can then select any of the options you would like her to help you with by clicking on the buttons.
+Make sure you do whatever she is asking, there is no certainty she will be helping you though.
+
+There is no end scene or quiting button, so when done playing, just close the tab.
+_______________________________________________________________________________________________
 ## Hallway of Dead
 
 Welcome to **Hallway of Dead**, a thrilling game where you navigate through a haunted hallway, collecting hidden notes while avoiding the watchful eyes of Ms. B. Your goal is to survive and uncover the secrets hidden within the hallway.
