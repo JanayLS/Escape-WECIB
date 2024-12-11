@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mini-Quest Game</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+    }
+
+    #game-container {
+      width: 80%;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      text-align: center;
+    }
+
+    #dialogue-box {
+      margin-bottom: 20px;
+      padding: 15px;
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      font-size: 16px;
+      text-align: left;
+      position: relative;
+    }
+
+    #dialogue-box:after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 20px;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 10px solid #e0e0e0;
+    }
+
+    #actions {
+      margin-top: 20px;
+    }
+
+    .button {
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .button:hover {
+      background-color: #0056b3;
+    }
+
+    #room-image {
+      max-width: 100%;
+      height: auto;
+      margin-top: 20px;
+    }
+
+    .character {
+      width: 100px;
+      height: 100px;
+      display: none;
+      position: absolute;
+    }
+
+    .gem {
+      width: 30px;
+      height: 30px;
+      background-color: gold;
+      border-radius: 50%;
+      display: inline-block;
+      margin: 10px;
+      cursor: pointer;
+    }
+
+    .gem.collected {
+      background-color: green;
+    }
+
+    #dialogue-input {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    #dialogue-input input {
+      padding: 10px;
+      margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      width: 70%;
+    }
+
+    #dialogue-input button {
+      padding: 10px 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    #game-room {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      margin-top: 20px;
+      background-image: url('room-removebg-preview.png');
+      background-size: cover;
+      background-position: center;
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    #player-avatar {
+      bottom: 10%;
+      left: 20%;
+      display: block;
+    }
+
+    #npc-character {
+      bottom: 10%;
+      right: 20%;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <!-- Avatar Selection Screen -->
+    <div id="avatar-selection">
+      <h2>Select Your Avatar</h2>
+      <div class="avatar-option" onclick="selectAvatar('avatar1')">
+        <img src="guy.png" alt="Avatar 1">
+      </div>
+      <div class="avatar-option" onclick="selectAvatar('avatar2')">
+        <img src="witch.png" alt="Avatar 2">
+      </div>
+      <div class="avatar-option" onclick="selectAvatar('avatar3')">
+        <img src="pony.png" alt="Avatar 3">
+      </div>
+    </div>
+
+    <!-- Game Screen (hidden initially) -->
+    <div id="game-screen" style="display: none;">
+      <div id="dialogue-box">Welcome to Ms. Moose's Room! She might *help* you with your scheduling issues... or not. Let's find out!</div>
+      <div id="game-room">
+        <div id="characters">
+          <img id="player-avatar" class="character" alt="Player Avatar">
+          <img id="npc-character" class="character" alt="NPC Character">
+        </div>
+      </div>
+      <div id="actions">
+        <button class="button" onclick="startQuest(1)">Change Schedule</button>
+        <button class="button" onclick="startQuest(2)">Drop Class</button>
+        <button class="button" onclick="startQuest(3)">Get a transcript</button>
+        <button class="button" onclick="startQuest(4)">Recommendation letter</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentQuest = 0;
+    let gemsCollected = 0;
+    let playerAvatar = null;
+
+    const characters = {
+      helper: {
+        name: "Ms. Moose",
+        image: "msmoore.png",
+        dialogue: [
+          "Oh, you want me to fix your schedule? Send me an e-mail and I will help you whenever I can.",
+          "Haha, just kidding. I don't feel like changing your schedule. I am sorry if you are struggling."
+        ]
+      },
+      sage: {
+        name: "Ms. Moose",
+        image: "msmoore.png",
+        dialogue: [
+          "Do you really want to drop AP Stats? Write the teacher's last name on the box and I will see what I can do.",
+          "Yea, I know Ms. Cube is the teacher, I cannot really help you with dropping that class though. Try better next time."
+        ]
+      },
+      ghost: {
+        name: "Ms. Moose",
+        image: "msmoore.png",
+        dialogue: [
+          "I am available to get you an unofficial copy of your transcript whenever you need. Just request it by clicking on the button below!",
+          "Actually, I cannot give you a copy of your OWN transcript.Now leave my room!"
+        ]
+      },
+      merchant: {
+        name: "Ms. Moose",
+        image: "msmoore.png",
+        dialogue: [
+          "Oh recommendtion letters, I forgot about those. Click on the 3 buttons bellow and I will make sure to fill them out by the deadline!",
+          "I am so sorry! I was too busy and I might've lost the deadline for your recommendation letter. I am so sorry that your colleege applications were not submitted because of me."
+        ]
+      }
+    };
+
+    function updateDialogue(text) {
+      document.getElementById('dialogue-box').innerText = text;
+    }
+
+    function selectAvatar(avatarId) {
+      playerAvatar = avatarId;
+      document.getElementById('avatar-selection').style.display = 'none';
+      document.getElementById('game-screen').style.display = 'block';
+      displayPlayerAvatar(avatarId);
+    }
+
+    function displayPlayerAvatar(avatarId) {
+      let avatarImage = '';
+      switch (avatarId) {
+        case 'avatar1':
+          avatarImage = "guy.png";
+          break;
+        case 'avatar2':
+          avatarImage = "witch.png";
+          break;
+        case 'avatar3':
+          avatarImage = "pony.png";
+          break;
+        default:
+          avatarImage = "https://via.placeholder.com/100?text=Unknown";
+      }
+      const playerAvatarEl = document.getElementById('player-avatar');
+      playerAvatarEl.src = avatarImage;
+      playerAvatarEl.style.display = 'block';
+    }
+
+    function startQuest(questNumber) {
+      currentQuest = questNumber;
+      let npcImage = '';
+      const npcCharacterEl = document.getElementById('npc-character');
+      switch (questNumber) {
+        case 1:
+          updateDialogue(`${characters.helper.name}: "${characters.helper.dialogue[0]}"`);
+          npcImage = characters.helper.image;
+          document.getElementById('actions').innerHTML = `
+            <button class="button" onclick="findKey()">Send Email</button>
+          `;
+          break;
+        case 2:
+          updateDialogue(`${characters.sage.name}: "${characters.sage.dialogue[0]}"`);
+          npcImage = characters.sage.image;
+          document.getElementById('actions').innerHTML = `
+            <input type="text" id="riddle-answer" placeholder="Your answer">
+            <button class="button" onclick="submitRiddle()">Submit Answer</button>
+          `;
+          break;
+        case 3:
+          updateDialogue(`${characters.ghost.name}: "${characters.ghost.dialogue[0]}"`);
+          npcImage = characters.ghost.image;
+          document.getElementById('actions').innerHTML = `
+            <button class="button" onclick="talkToGhost()">Request Transcript!</button>
+          `;
+          break;
+        case 4:
+          updateDialogue(`${characters.merchant.name}: "${characters.merchant.dialogue[0]}"`);
+          npcImage = characters.merchant.image;
+          document.getElementById('actions').innerHTML = `
+            <div id="gems-container">
+              <div class="gem" onclick="collectGem(this)"></div>
+              <div class="gem" onclick="collectGem(this)"></div>
+              <div class="gem" onclick="collectGem(this)"></div>
+            </div>
+            <button class="button" onclick="checkGems()">Request recommendation letter</button>
+          `;
+          break;
+        default:
+          updateDialogue("Invalid quest.");
+          break;
+      }
+      npcCharacterEl.src = npcImage;
+      npcCharacterEl.style.display = 'block';
+    }
+
+    function displayNPCCharacter(imageUrl) {
+      const npcCharacterEl = document.getElementById('npc-character');
+      npcCharacterEl.src = imageUrl;
+      npcCharacterEl.style.display = 'block';
+    }
+
+    function hideNPCCharacter() {
+      const npcCharacterEl = document.getElementById('npc-character');
+      npcCharacterEl.style.display = 'none';
+    }
+
+    function findKey() {
+      updateDialogue(`${characters.helper.name}: "${characters.helper.dialogue[1]}"`);
+      hideNPCCharacter();
+      resetGame();
+    }
+
+    function submitRiddle() {
+      const answer = document.getElementById('riddle-answer').value.toLowerCase();
+      if (answer === 'kubik') {
+        updateDialogue(`${characters.sage.name}: "${characters.sage.dialogue[1]}"`);
+        hideNPCCharacter();
+        resetGame();
+      } else {
+        updateDialogue(`${characters.sage.name}: 'That's not it. Try again! What has keys but cannot open locks?'`);
+      }
+    }
+
+    function talkToGhost() {
+      updateDialogue(`${characters.ghost.name}: "${characters.ghost.dialogue[1]}"`);
+      hideNPCCharacter();
+      resetGame();
+    }
+
+    function collectGem(element) {
+      if (!element.classList.contains('collected')) {
+        element.classList.add('collected');
+        gemsCollected++;
+      }
+    }
+
+    function checkGems() {
+      if (gemsCollected >= 3) {
+        updateDialogue(`${characters.merchant.name}: "${characters.merchant.dialogue[1]}"`);
+        hideNPCCharacter();
+        resetGame();
+      } else {
+        updateDialogue(`${characters.merchant.name}: "You have extra steps. Click all the buttons"`);
+      }
+    }
+
+    function resetGame() {
+      document.getElementById('actions').innerHTML = `
+        <button class="button" onclick="startQuest(1)">Change Schedule</button>
+        <button class="button" onclick="startQuest(2)">Drop Class</button>
+        <button class="button" onclick="startQuest(3)">Get a transcript</button>
+        <button class="button" onclick="startQuest(4)">Recommendation letter</button>
+      `;
+    }
+  </script>
