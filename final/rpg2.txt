@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fire and Water Game</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            background-image: url(wood.jpg);
+            overflow: hidden;
+            display: none;
+        }
+
+        #start-screen, #color-selection-screen, #pause-screen, #next-level-screen, #final-screen, #secret-path-screen, #journal-screen, #game-over-screen, #congrats-screen, #secret-end-screen, #journal-end-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #start-screen button, #color-selection-screen button, #pause-screen button, #next-level-screen button, #final-screen button, #secret-path-screen button, #game-over-screen button, #congrats-screen button, #journal-screen button, #secret-end-screen button, #journal-end-screen button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .character {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 30%;
+            background-image: url("redplayer.png"); /* Replace with the actual URL for the red player image */
+            background-size: cover;
+        }
+
+        .water {
+            background-image: url("blueplayer.png"); /* Replace with the actual URL for the blue player image */
+            background-size: cover;
+        }
+
+        .object {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: url('notes.png') no-repeat center center / cover;
+            border: 1px solid;
+        }
+
+        .door {
+            position: absolute;
+            width: 120px;
+            height: 160px;
+            background: url('door.png') no-repeat center center / cover;
+            border: 1px;
+        }
+
+        .boss {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: url('turbositting.png') no-repeat center center / cover;
+            border: 1px;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #note {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        #controls button {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #notes-list {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            position: absolute;
+            top: 50px;
+            right: 10px;
+        }
+
+        #final-image {
+            width: 100%;
+            height: auto;
+        }
+
+        #level-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            color: white;
+        }
+
+        #congrats-image {
+            width: 50%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-screen">
+        <h1>Fire and Water Game</h1>
+        <button id="play-button">Play</button>
+        <button id="exit-button">Exit</button>
+    </div>
+
+    <div id="color-selection-screen" style="display: none;">
+        <h2>Choose Your Character Color</h2>
+        <button id="red-button">Red</button>
+        <img src = "redplayer.png" height = "120px" width="120px">
+        <button id="blue-button">Blue</button>
+        <img src ="blueplayer.png" height = "120px" width="120px">
+    </div>
+
+    <div id="game-container">
+        <div id="level-indicator">Level: 1</div>
+        <div id="character" class="character"></div>
+        <div id="level-container"></div>
+        <div id="note"></div>
+        <div class="boss" id="boss"></div>
+
+        <div id="controls">
+            <button id="notes-button">Notes</button>
+            <button id="pause-button">Pause</button>
+            <button id="reset-button">Reset</button>
+        </div>
+
+        <div id="notes-list"></div>
+    </div>
+
+    <div id="pause-screen" style="display: none;">
+        <h2>Game Paused</h2>
+        <button id="resume-button">Resume</button>
+        <button id="exit-button-pause">Exit</button>
+    </div>
+
+    <div id="next-level-screen" style="display: none;">
+        <h2>Level Complete!</h2>
+        <button id="next-level-confirm-button">Next Level</button>
+        <button id="exit-button-next-level">Exit</button>
+    </div>
+
+    <div id="final-screen" style="display: none;">
+        <img id="final-image" src="your-image-url-here" alt="Final Image">
+        <button id="restart-button" style="display: none;">Restart Loser?</button>
+    </div>
+
+    <div id="secret-path-screen" style="display: none;">
+        <h2>Observation journal</h2>
+        <button id="continue-secret-path-button">Continue</button>
+        <button id="secret-path-try-again-button">Try Again</button>
+        <button id="secret-path-exit-button">Exit</button>
+    </div>
+
+    <div id="journal-screen" style="display: none;">
+        <h2>Observation journal</h2>
+        <p>Text for the journal screen goes here.</p>
+        <button id="journal-continue-button">Continue</button>
+        <button id="journal-try-again-button">Try Again</button>
+        <button id="journal-exit-button">Exit</button>
+    </div>
+
+    <div id="congrats-screen" style="display: none;">
+        <h2>Congrats!</h2>
+        <button id="congrats-retry-button">Retry</button>
+        <button id="congrats-exit-button">Exit</button>
+    </div>
+
+    <div id="game-over-screen" style="display: none;">
+        <h2>Loser</h2>
+        <button id="try-again-button">Try Again</button>
+        <button id="restart-from-beginning-button">Restart from Level One</button>
+        <button id="exit-button-game-over">Exit</button>
+    </div>
+
+    <div id="secret-end-screen" style="display: none;">
+        <h2>Dear Diary</h2>
+        <button id="secret-restart-button">Restart</button>
+        <button id="secret-exit-button">Exit</button>
+    </div>
+
+    <div id="journal-end-screen" style="display: none;">
+        <h2>Observation Journal</h2>
+        <p>Text for the journal screen goes here.</p>
+        <button id="journal-restart-button">Restart</button>
+        <button id="journal-exit-button">Exit</button>
+    </div>
+
+    <script>
+        const startScreen = document.getElementById('start-screen');
+        const colorSelectionScreen = document.getElementById('color-selection-screen');
+        const gameContainer = document.getElementById('game-container');
+        const levelIndicator = document.getElementById('level-indicator');
+        const playButton = document.getElementById('play-button');
+        const exitButton = document.getElementById('exit-button');
+        const redButton = document.getElementById('red-button');
+        const blueButton = document.getElementById('blue-button');
+        const character = document.getElementById('character');
+        const levelContainer = document.getElementById('level-container');
+        const door = document.createElement('div');
+        const note = document.getElementById('note');
+        const notesButton = document.getElementById('notes-button');
+        const pauseButton = document.getElementById('pause-button');
+        const resetButton = document.getElementById('reset-button');
+        const notesList = document.getElementById('notes-list');
+        const pauseScreen = document.getElementById('pause-screen');
+        const nextLevelScreen = document.getElementById('next-level-screen');
+        const resumeButton = document.getElementById('resume-button');
+        const exitButtonPause = document.getElementById('exit-button-pause');
+        const nextLevelConfirmButton = document.getElementById('next-level-confirm-button');
+        const exitButtonNextLevel = document.getElementById('exit-button-next-level');
+        const finalScreen = document.getElementById('final-screen');
+        const finalImage = document.getElementById('final-image');
+        const restartButton = document.getElementById('restart-button');
+        const secretPathScreen = document.getElementById('secret-path-screen');
+        const continueSecretPathButton = document.getElementById('continue-secret-path-button');
+        const secretPathTryAgainButton = document.getElementById('secret-path-try-again-button');
+        const secretPathExitButton = document.getElementById('secret-path-exit-button');
+        const journalScreen = document.getElementById('journal-screen');
+        const journalContinueButton = document.getElementById('journal-continue-button');
+        const journalTryAgainButton = document.getElementById('journal-try-again-button');
+        const journalExitButton = document.getElementById('journal-exit-button');
+        const congratsScreen = document.getElementById('congrats-screen');
+        const congratsRetryButton = document.getElementById('congrats-retry-button');
+        const congratsExitButton = document.getElementById('congrats-exit-button');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const tryAgainButton = document.getElementById('try-again-button');
+        const restartFromBeginningButton = document.getElementById('restart-from-beginning-button');
+        const exitButtonGameOver = document.getElementById('exit-button-game-over');
+        const secretEndScreen = document.getElementById('secret-end-screen');
+        const secretRestartButton = document.getElementById('secret-restart-button');
+        const secretExitButton = document.getElementById('secret-exit-button');
+        const journalEndScreen = document.getElementById('journal-end-screen');
+        const journalRestartButton = document.getElementById('journal-restart-button');
+        const journalEndExitButton = document.getElementById('journal-exit-button'); // Renamed to avoid conflict
+
+        let characterState = 'fire';
+        let characterX = 100;
+        let characterY = 100;
+        let gamePaused = false;
+        let collectedNotes = [];
+        let currentLevel = 1;
+        let bossLooking = false;
+        let movementAttempted = false;
+        let bossTimeout;
+        let bossDurationTimeout;
+
+        playButton.addEventListener('click', () => {
+            startScreen.style.display = 'none';
+            colorSelectionScreen.style.display = 'flex';
+        });
+
+        exitButton.addEventListener('click', () => {
+            alert('Thank you for playing!');
+            window.close();
+        });
+
+        redButton.addEventListener('click', () => {
+            characterState = 'fire';
+            character.classList.remove('water');
+            character.classList.add('fire');
+            startGame();
+        });
+
+        blueButton.addEventListener('click', () => {
+            characterState = 'water';
+            character.classList.remove('fire');
+            character.classList.add('water');
+            startGame();
+        });
+
+        function startGame() {
+            colorSelectionScreen.style.display = 'none';
+            gameContainer.style.display = 'block';
+            loadLevel(currentLevel);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (gamePaused) return;
+
+            switch (event.key) {
+                case 'ArrowLeft':
+                    characterX -= 20; // Increase speed
+                    break;
+                case 'ArrowRight':
+                    characterX += 20; // Increase speed
+                    break;
+                case 'ArrowUp':
+                    characterY -= 20; // Increase speed
+                    break;
+                case 'ArrowDown':
+                    characterY += 20; // Increase speed
+                    break;
+                case ' ':
+                    toggleCharacter();
+                    break;
+            }
+            updateCharacterPosition();
+            if (bossLooking && event.key !== ' ') {
+                movementAttempted = true;
+                checkMovementDuringBossLook();
+            }
+            checkObjectCollision();
+            checkDoorCollision();
+        });
+
+        notesButton.addEventListener('click', () => {
+            if (notesList.style.display === 'none') {
+                notesList.style.display = 'block';
+                notesList.innerHTML = '<h3>Collected Notes</h3><ul>' + collectedNotes.map(note => `<li>${note}</li>`).join('') + '</ul>';
+            } else {
+                notesList.style.display = 'none';
+            }
+        });
+
+        pauseButton.addEventListener('click', () => {
+            gamePaused = !gamePaused;
+            pauseScreen.style.display = gamePaused ? 'flex' : 'none';
+        });
+
+        resetButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        function toggleCharacter() {
+            if (characterState === 'fire') {
+                characterState = 'water';
+                character.classList.remove('fire');
+                character.classList.add('water');
+            } else {
+                characterState = 'fire';
+                character.classList.remove('water');
+                character.classList.add('fire');
+            }
+        }
+
+        function updateCharacterPosition() {
+            character.style.left = characterX + 'px';
+            character.style.top = characterY + 'px';
+        }
+
+        function createRandomObjects(level) {
+            levelContainer.innerHTML = '';
+            const numberOfObjects = 3;
+            const objects = [];
+
+            for (let i = 0; i < numberOfObjects; i++) {
+                let object;
+                let overlapping;
+
+                do {
+                    overlapping = false;
+                    object = {
+                        element: document.createElement('div'),
+                        top: Math.random() * (window.innerHeight - 50),
+                        left: Math.random() * (window.innerWidth - 200)
+                    };
+
+                    objects.forEach(existingObject => {
+                        if (
+                            Math.abs(existingObject.top - object.top) < 50 &&
+                            Math.abs(existingObject.left - object.left) < 50
+                        ) {
+                            overlapping = true;
+                        }
+                    });
+                } while (overlapping);
+
+                object.element.classList.add('object');
+                object.element.style.top = object.top + 'px';
+                object.element.style.left = object.left + 'px';
+                levelContainer.appendChild(object.element);
+                objects.push(object);
+            }
+        }
+
+        function showSecretPathScreen() {
+            secretPathScreen.style.display = 'flex';
+        }
+
+        function showFinalCongratsScreen() {
+            congratsScreen.style.display = 'flex';
+        }
+
+        nextLevelConfirmButton.addEventListener('click', () => {
+            currentLevel++;
+            nextLevelScreen.style.display = 'none';
+            if (currentLevel <= 3) {
+                loadLevel(currentLevel);
+            } else {
+                if (collectedNotes.length === 9) {
+                    if (characterState === 'fire') {
+                        showSecretEnd();
+                    } else if (characterState === 'water') {
+                        showJournalEnd();
+                    }
+                } else {
+                    alert('Congratulations! You have completed all levels.');
+                    window.location.reload();
+                }
+            }
+        });
+
+        exitButtonNextLevel.addEventListener('click', () => {
+            if (confirm('Are you sure you want to exit?')) {
+                window.close();
+            }
+        });
+
+        congratsRetryButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        congratsExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        continueSecretPathButton.addEventListener('click', () => {
+            secretPathScreen.style.display = 'none';
+            journalScreen.style.display = 'flex';
+        });
+
+        secretPathTryAgainButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        secretPathExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        journalContinueButton.addEventListener('click', () => {
+            journalScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+        });
+
+        journalTryAgainButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        journalExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        restartButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        tryAgainButton.addEventListener('click', () => {
+            resetCurrentLevelNotes();
+            loadLevel(currentLevel);
+            gameOverScreen.style.display = 'none';
+            resetGameOverConditions();
+        });
+
+        exitButtonGameOver.addEventListener('click', () => {
+            if (confirm('Are you sure you want to exit?')) {
+                window.close();
+            }
+        });
+
+        function loadLevel(level) {
+            characterX = 100;
+            characterY = 100;
+            updateCharacterPosition();
+
+            createRandomObjects(level);
+
+            door.style.top = '400px';
+            door.style.left = '800px'; // Keep door position constant
+
+            door.className = 'door';
+            levelContainer.appendChild(door);
+
+            boss.style.background = "url(turbositting.png') no-repeat center center / cover"; // Boss starts as purple
+            boss.style.right = '10px';
+            boss.style.top = '50%';
+            boss.style.transform = 'translateY(-50%)';
+
+            levelIndicator.textContent = `Level: ${level}`;
+
+            setTimeout(startBossBehavior, 5000); // Boss is purple for the first 5 seconds
+        }
+
+        function resetCurrentLevelNotes() {
+            collectedNotes = collectedNotes.filter(note => !note.includes(`Level ${currentLevel}`));
+            notesList.innerHTML = '<h3>Collected Notes</h3><ul>' + collectedNotes.map(note => `<li>${note}</li>`).join('') + '</ul>';
+        }
+
+        resumeButton.addEventListener('click', () => {
+            gamePaused = false;
+            pauseScreen.style.display = 'none';
+        });
+
+        exitButtonPause.addEventListener('click', () => {
+            if (confirm('Are you sure you want to exit?')) {
+                window.close();
+            }
+        });
+
+        function startBossBehavior() {
+            const interval = Math.random() * (20000 - 5000) + 5000; // Random interval between 5-20 seconds
+            bossTimeout = setTimeout(() => {
+                if (bossLooking) {
+                    boss.style.background = "url('turbositting.png') no-repeat center center / cover"; // Boss looking away
+                    bossLooking = false;
+                    startBossBehavior(); // Continue the behavior
+                } else {
+                    boss.style.background = "url('turbostanding.webp') no-repeat center center / cover"; // Boss looking at player
+                    bossLooking = true;
+                    movementAttempted = false; // Reset movement attempt
+                    bossDurationTimeout = setTimeout(() => {
+                        boss.style.background = "url('turbositting.png') no-repeat center center / cover"; // Boss stops looking at player
+                        bossLooking = false;
+                        startBossBehavior(); // Continue the behavior
+                    }, Math.random() * (15000 - 5000) + 5000); // Random duration between 5-15 seconds
+                }
+            }, interval);
+        }
+
+        function checkMovementDuringBossLook() {
+            if (movementAttempted) {
+                clearTimeout(bossTimeout);
+                clearTimeout(bossDurationTimeout);
+                gameOverScreen.style.display = 'flex';
+                bossLooking = false;
+                document.removeEventListener('keydown', handleKeydown);
+            }
+        }
+
+        function resetGameOverConditions() {
+            movementAttempted = false;
+            document.addEventListener('keydown', handleKeydown);
+        }
+
+        function handleKeydown(event) {
+            if (gamePaused) return;
+
+            switch (event.key) {
+                case 'ArrowLeft':
+                    characterX -= 20; // Increase speed
+                    break;
+                case 'ArrowRight':
+                    characterX += 20; // Increase speed
+                    break;
+                case 'ArrowUp':
+                    characterY -= 20; // Increase speed
+                    break;
+                case 'ArrowDown':
+                    characterY += 20; // Increase speed
+                    break;
+                case ' ':
+                    toggleCharacter();
+                    break;
+            }
+            updateCharacterPosition();
+            if (bossLooking && event.key !== ' ') {
+                movementAttempted = true;
+                checkMovementDuringBossLook();
+            }
+            checkObjectCollision();
+            checkDoorCollision();
+        }
+
+        document.addEventListener('keydown', handleKeydown);
+
+        function collectNote() {
+            collectedNotes.push(`Note from Level ${currentLevel}`);
+            notesList.innerHTML = '<h3>Collected Notes</h3><ul>' + collectedNotes.map(note => `<li>${note}</li>`).join('') + '</ul>';
+            checkAllNotesCollected();
+        }
+
+        function checkAllNotesCollected() {
+            if (collectedNotes.length === 9) {
+                if (currentLevel === 3) {
+                    if (characterState === 'fire') {
+                        showSecretEnd();
+                    } else if (characterState === 'water') {
+                        showJournalEnd();
+                    }
+                }
+            }
+        }
+
+        function showSecretEnd() {
+            gameContainer.style.display = 'none';
+            secretEndScreen.style.display = 'flex';
+        }
+
+        function showJournalEnd() {
+            gameContainer.style.display = 'none';
+            journalEndScreen.style.display = 'flex';
+        }
+
+        secretRestartButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        secretExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        journalRestartButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        journalEndExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        function checkObjectCollision() {
+            const objects = document.querySelectorAll('.object');
+            objects.forEach(object => {
+                const rect1 = character.getBoundingClientRect();
+                const rect2 = object.getBoundingClientRect();
+
+                if (
+                    rect1.left < rect2.left + rect2.width &&
+                    rect1.left + rect1.width > rect2.left &&
+                    rect1.top < rect2.top + rect2.height &&
+                    rect1.top + rect1.height > rect2.top
+                ) {
+                    object.remove();
+                    collectNote();
+                }
+            });
+        }
+
+        function checkDoorCollision() {
+            const rect1 = character.getBoundingClientRect();
+            const rect2 = door.getBoundingClientRect();
+
+            if (
+                rect1.left < rect2.left + rect2.width &&
+                rect1.left + rect1.width > rect2.left &&
+                rect1.top < rect2.top + rect2.height &&
+                rect1.top + rect1.height > rect2.top
+            ) {
+                if (currentLevel === 3 && collectedNotes.length === 9) {
+                    if (characterState === 'fire') {
+                        showSecretEnd();
+                    } else if (characterState === 'water') {
+                        showJournalEnd();
+                    }
+                } else {
+                    nextLevelScreen.style.display = 'flex';
+                }
+            }
+        }
+
+        loadLevel(currentLevel);
+        updateCharacterPosition();
+    </script>
+</body>
+</html>

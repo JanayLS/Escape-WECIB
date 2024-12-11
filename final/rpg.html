@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hallway of Dead</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        #game-container {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            background-image: url(wood.jpg);
+            overflow: hidden;
+            display: none;
+        }
+
+        #start-screen, #color-selection-screen, #pause-screen, #next-level-screen, #final-screen, #secret-path-screen, #journal-screen, #game-over-screen, #congrats-screen, #secret-end-screen, #journal-end-screen, #instruction-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: url('grave.jpg');
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        #start-screen button, #color-selection-screen button, #pause-screen button, #next-level-screen button, #final-screen button, #secret-path-screen button, #game-over-screen button, #congrats-screen button, #journal-screen button, #secret-end-screen button, #journal-end-screen button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        .character {
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            border-radius: 30%;
+            background-image: url("redplayer.png"); /* Replace with the actual URL for the red player image */
+            background-size: cover;
+        }
+
+        .water {
+            background-image: url("blueplayer.png"); /* Replace with the actual URL for the blue player image */
+            background-size: cover;
+        }
+
+        .object {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            background: url('notes.png') no-repeat center center / cover;
+            border: 1px solid;
+        }
+
+        .door {
+            position: absolute;
+            width: 110px;
+            height: 140px;
+            background: url('door.png') no-repeat center center / cover;
+            border: 1px;
+        }
+
+        .boss {
+            position: absolute;
+            width: 200px;
+            height: 200px;
+            background: url('turbositting.png') no-repeat center center / cover;
+            border: 1px;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #note {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            display: none;
+        }
+
+        #controls {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+        }
+
+        #controls button {
+            padding: 5px 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+        }
+
+        #notes-list {
+            display: none;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            position: absolute;
+            top: 50px;
+            right: 10px;
+        }
+
+        #final-image {
+            width: 100%;
+            height: auto;
+        }
+
+        #level-indicator {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            color: white;
+        }
+
+        #congrats-image {
+            width: 50%;
+            height: auto;
+        }
+    </style>
+</head>
+<body>
+    <div id="start-screen" style="position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: url('grave.jpg'); color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 10;">
+        <h1>Hallway of Dead</h1>
+        <button id="play-button" style="padding: 10px 20px; font-size: 20px; border: none; border-radius: 5px; cursor: pointer;">Play</button>
+        <button id="exit-button" style="padding: 10px 20px; font-size: 20px; border: none; border-radius: 5px; cursor: pointer;">Exit</button>
+    </div>
+    
+    <div id="instruction-screen" style="display: none;">
+        <h2 style="margin-bottom: 10px; text-align: center;">Survive the Hallway</h2>
+        <p style="margin-bottom: 20px; text-align: center;">You are trapped in a haunted hallway, where silence is your only ally. Ms. B is always watching—if she sees you move, her wrath could be your end. Proceed with caution!</p>
+        <h3 style="margin-bottom: 10px;">How to Play:</h3>
+        <ul style="margin-bottom: 20px; list-style-type: disc; padding-left: 20px;">
+            <li>Use the <strong>arrow keys</strong> to navigate through the hallway.</li>
+            <li>Collect all the hidden notes to unlock a <strong>secret ending</strong>.</li>
+            <li>Don't move while <strong>Ms. B is looking!</strong></li>
+        </ul>
+        <div style="text-align: center;">
+            <button id="instruction-next-button" style="padding: 10px 20px; font-size: 16px; border: none; border-radius: 5px; background-color: #007BFF; color: white; cursor: pointer;">Next</button>
+        </div>
+    </div>
+    
+
+    <div id="color-selection-screen" style="display: none;">
+        <h2>Choose Your Character Color</h2>
+        <button id="red-button">Red</button>
+        <img src = "redplayer.png" height = "120px" width="120px">
+        <button id="blue-button">Blue</button>
+        <img src ="blueplayer.png" height = "120px" width="120px">
+    </div>
+
+    <div id="game-container">
+        <div id="level-indicator">Level: 1</div>
+        <div id="character" class="character"></div>
+        <div id="level-container"></div>
+        <div id="note"></div>
+        <div class="boss" id="boss"></div>
+
+        <div id="controls">
+            <button id="notes-button">Notes</button>
+            <button id="pause-button">Pause</button>
+            <button id="reset-button">Reset</button>
+        </div>
+
+        <div id="notes-list"></div>
+    </div>
+
+    <div id="pause-screen" style="display: none;">
+        <h2>Game Paused. Too bad you can't pause life.</h2>
+        <button id="resume-button">Resume</button>
+        <button id="exit-button-pause">Exit</button>
+    </div>
+
+    <div id="next-level-screen" style="display: none;">
+        <h2>Level Complete. Let's see if you can beat the next one.</h2>
+        <button id="next-level-confirm-button">Next Level</button>
+        <button id="exit-button-next-level">Exit</button>
+    </div>
+
+    <div id="final-screen" style="display: none;">
+        <img id="final-image" src="mcqueen.jpg" alt="Final Image">
+        <audio id = "screaming" src = "screaming.mp3" ></audio>
+        <button id="restart-button" style="display: none;">You have two ears, one mouth. Listen next time.</button>
+    </div>
+
+    <div id="secret-path-screen" style="display: none;">
+        <h2>Observation journal</h2>
+        <button id="continue-secret-path-button">Continue</button>
+        <button id="secret-path-try-again-button">Try Again</button>
+        <button id="secret-path-exit-button">Exit</button>
+    </div>
+
+    <div id="journal-screen" style="display: none;">
+        <h2>Observation journal</h2>
+        <p>Text for the journal screen goes here.</p>
+        <button id="journal-continue-button">Continue</button>
+        <button id="journal-try-again-button">Try Again</button>
+        <button id="journal-exit-button">Exit</button>
+    </div>
+
+    <div id="congrats-screen" style="display: none;">
+        <h2>Good Job. You won't be so lucky next time.</h2>
+        <button id="congrats-retry-button">Retry</button>
+        <button id="congrats-exit-button">Exit</button>
+    </div>
+
+    <div id="game-over-screen" style="display: none;">
+        <h2>You have two eyes one mouth. Try listening next time.</h2>
+        <button id="try-again-button">Try Again</button>
+        <button id="restart-from-beginning-button">Restart from Level One</button>
+        <button id="exit-button-game-over">Exit</button>
+    </div>
+
+    <div id="secret-end-screen" style="display: none;" padding:10px>
+        <h2>Dear Diary</h2>
+            <h2>Entry 2: October 16th, 2024</h2>
+            <p>It’s not just her voice.
+            I keep hearing these faint whispers. They’re everywhere—in the hallways, during class, even in my room when I’m alone. At first, I thought I was imagining them, but they’re real.
+            And they’re loudest when Ms. B is near.
+            Today, when I walked past her office, I swear the whispers got clearer, almost like they were saying my name. She looked up from her desk and smiled at me through the glass. It wasn’t a normal smile. It was like she knew what I was hearing.</p>
+<n></n>
+            <h3>Entry 6: October 20th, 2024</h3>
+            <p>I dreamed about her.
+            In the dream, I was sitting in the Career Center, alone. The lights were flickering, and the air was so cold I could see my breath. Ms. B was at her desk, her hands folded neatly, her head tilted just slightly.
+            “You’re at a crossroads, Claire,” she said. “Let me guide you.”
+            Her voice wasn’t hers. It was layered, deeper, like multiple voices speaking at once. Her eyes were black, no whites at all, and her smile stretched unnaturally wide.
+            I woke up gasping, the sound of her voice still echoing in my head.</p>
+        <n></n>
+            <h3>Entry 9: October 30th, 2024</h3>
+            <p>She’s everywhere.
+            I’ve started skipping Career Prep, but it doesn’t help. Ms. B still finds me—in the hallways, the library, even during lunch. Today, when she passed my table, she stopped just long enough to say, “You’re wasting your potential, Claire.”
+            Her voice sounded like it was coming from inside my head.
+            The whispers are louder now. They’re not just sounds anymore; they’re words. They say things like <i>run</i> and <i>she’s watching</i>.I don't know who to trust. I can't sleep at night anymore. I want to run but...I think it's too late for that.</p>
+<n></n>
+            <h3>Entry 14: November 12th, 2024</h3>
+            <p>There’s a name scratched into the back of one of the desks in the Career Center: Jordan Quinn.
+            I looked them up. They went missing last year along with 3 other kids. No one talks about them, and the school hasn’t mentioned it at all. But something about it feels connected to Ms. B.
+            I checked the desk again after school. There are more words scratched into the wood: <i>I opened the door. I’m sorry.</i></p>
+            <p><i>What door?</i></p>
+    <n></n>
+            <h3>Entry 19: November 15th, 2024</h3>
+            <p>I found Jordan’s journal.
+            It was hidden in the wall behind Ms. B’s desk. They wrote about summoning something—a “spirit of potential.” But that’s not what they summoned. They summoned her.
+            Ms. B isn’t human. She’s something else, something that feeds on us.
+            I don’t think I can stop her. And I think she’s chosen me. I'm the next to dissappear.</p>
+        <button id="secret-restart-button">Restart</button>
+        <button id="secret-exit-button">Exit</button>
+    </div>
+
+    <div id="journal-end-screen" style="display: none;" padding:10px>
+        <h2>Observation Journal</h2>
+        <h2>Entry 3: March 1st, 2023</h2>
+        <p> I found a book in the library basement.
+            It was stuffed behind old magazines, like someone didn’t want anyone to find it. The cover is black leather with a weird symbol burned into it—a circle with jagged lines.
+            There’s a ritual in it about “unlocking hidden potential.” It sounded ridiculous, but I was curious. I lit the candles, drew the symbol, and whispered the words.
+            Nothing happened. At least, not then.</p>
+<n></n>
+        <h3>Entry 6: March 3rd, 2023</h3>
+        <p>Something’s wrong.
+            Ms. B seemed… different today. She looked at me like she knew what I’d done. Her eyes are darker now, and her voice has this strange hum underneath, like static.
+            During Career Prep, she leaned over my desk and said, “You’ve taken the first step, Jordan. Now we’ll see what you’re capable of.”
+            I didn’t tell her about the ritual. How could she know?</p>
+    <n></n>
+        <h3>Entry 9: March 10th, 2023</h3>
+        <p>I think I summoned her.
+            The thing I called during the ritual—it’s inside Ms. B. I can feel it when she’s near. The air gets heavy, like it’s harder to breathe, and the whispers start up again.
+            She called me into her office today. She just stared at me for a long time, smiling faintly. Then she said, “You’ve opened the door, Jordan. You can’t close it now.”</p>
+<n></n>>
+        <h3>Entry 12: March 20th, 2023</h3>
+        <p>She’s feeding on us.
+            I can see it in the students who spend time with her. They leave her office looking pale, their eyes dull, like they’ve lost something vital.
+            When she passed me in the hallway today, she brushed her hand against my shoulder. My skin went ice cold, and I felt… hollow. “You’ve done so well,” she said. “You’ll see the rewards soon.”
+            I don’t want rewards. I want this to stop.</p>
+<n></n>
+        <h3>Entry 16: April 5th, 2023</h3>
+        <p>I tried destroying the book.
+            It won’t burn. It won’t tear. It’s like it wants to stay here.
+            I think Ms. B knows I’ve been trying to undo what I did. Every time I see her, she smiles just a little wider, and the whispers grow louder in my head.</p>
+
+        <h3>Entry 28: April 25th, 2023</h3>
+        <p>I don’t have much time.
+            I scratched a warning into the desk in the Career Center and hid this journal behind the wall. I don’t know if anyone will find it, but if you’re reading this: stay away from Ms. B.
+            I summoned something ancient. Something that feeds on ambition and fear.
+            And now, it’s wearing her face. My teacher is a demon. And I'm going to die.</p>
+        <button id="journal-restart-button">Restart</button>
+        <button id="journal-exit-button">Exit</button>
+    </div>
+
+    <script>
+        const startScreen = document.getElementById('start-screen');
+        const colorSelectionScreen = document.getElementById('color-selection-screen');
+        const gameContainer = document.getElementById('game-container');
+        const levelIndicator = document.getElementById('level-indicator');
+        const playButton = document.getElementById('play-button');
+        const exitButton = document.getElementById('exit-button');
+        const redButton = document.getElementById('red-button');
+        const blueButton = document.getElementById('blue-button');
+        const character = document.getElementById('character');
+        const levelContainer = document.getElementById('level-container');
+        const door = document.createElement('div');
+        const note = document.getElementById('note');
+        const notesButton = document.getElementById('notes-button');
+        const pauseButton = document.getElementById('pause-button');
+        const resetButton = document.getElementById('reset-button');
+        const notesList = document.getElementById('notes-list');
+        const pauseScreen = document.getElementById('pause-screen');
+        const nextLevelScreen = document.getElementById('next-level-screen');
+        const resumeButton = document.getElementById('resume-button');
+        const exitButtonPause = document.getElementById('exit-button-pause');
+        const nextLevelConfirmButton = document.getElementById('next-level-confirm-button');
+        const exitButtonNextLevel = document.getElementById('exit-button-next-level');
+        const finalScreen = document.getElementById('final-screen');
+        const finalImage = document.getElementById('final-image');
+        const restartButton = document.getElementById('restart-button');
+        const secretPathScreen = document.getElementById('secret-path-screen');
+        const continueSecretPathButton = document.getElementById('continue-secret-path-button');
+        const secretPathTryAgainButton = document.getElementById('secret-path-try-again-button');
+        const secretPathExitButton = document.getElementById('secret-path-exit-button');
+        const journalScreen = document.getElementById('journal-screen');
+        const journalContinueButton = document.getElementById('journal-continue-button');
+        const journalTryAgainButton = document.getElementById('journal-try-again-button');
+        const journalExitButton = document.getElementById('journal-exit-button');
+        const congratsScreen = document.getElementById('congrats-screen');
+        const congratsRetryButton = document.getElementById('congrats-retry-button');
+        const congratsExitButton = document.getElementById('congrats-exit-button');
+        const gameOverScreen = document.getElementById('game-over-screen');
+        const tryAgainButton = document.getElementById('try-again-button');
+        const restartFromBeginningButton = document.getElementById('restart-from-beginning-button');
+        const exitButtonGameOver = document.getElementById('exit-button-game-over');
+        const secretEndScreen = document.getElementById('secret-end-screen');
+        const secretRestartButton = document.getElementById('secret-restart-button');
+        const secretExitButton = document.getElementById('secret-exit-button');
+        const journalEndScreen = document.getElementById('journal-end-screen');
+        const journalRestartButton = document.getElementById('journal-restart-button');
+        const journalEndExitButton = document.getElementById('journal-exit-button'); // Renamed to avoid conflict
+        const instructionScreen = document.getElementById('instruction-screen');
+        const instructionNextButton = document.getElementById('instruction-next-button');
+        const screaming = document.getElementById('screaming')
+
+        let characterState = 'fire';
+        let characterX = 100;
+        let characterY = 100;
+        let gamePaused = false;
+        let collectedNotes = [];
+        let currentLevel = 1;
+        let bossLooking = false;
+        let movementAttempted = false;
+        let bossTimeout;
+        let bossDurationTimeout;
+
+        playButton.addEventListener('click', () => {
+        startScreen.style.display = 'none';
+        instructionScreen.style.display = 'flex';
+    });
+
+    // Proceed to character selection
+    instructionNextButton.addEventListener('click', () => {
+        instructionScreen.style.display = 'none';
+        colorSelectionScreen.style.display = 'flex';
+    });
+
+        exitButton.addEventListener('click', () => {
+            alert('Thank you for playing!');
+            window.close();
+        });
+
+        redButton.addEventListener('click', () => {
+            characterState = 'fire';
+            character.classList.remove('water');
+            character.classList.add('fire');
+            startGame();
+        });
+
+        blueButton.addEventListener('click', () => {
+            characterState = 'water';
+            character.classList.remove('fire');
+            character.classList.add('water');
+            startGame();
+        });
+
+        function startGame() {
+            colorSelectionScreen.style.display = 'none';
+            gameContainer.style.display = 'block';
+            loadLevel(currentLevel);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (gamePaused) return;
+
+            switch (event.key) {
+                case 'ArrowLeft':
+                    characterX -= 20; // Increase speed
+                    break;
+                case 'ArrowRight':
+                    characterX += 20; // Increase speed
+                    break;
+                case 'ArrowUp':
+                    characterY -= 20; // Increase speed
+                    break;
+                case 'ArrowDown':
+                    characterY += 20; // Increase speed
+                    break;
+                case ' ':
+                    toggleCharacter();
+                    break;
+            }
+            updateCharacterPosition();
+            if (bossLooking && event.key !== ' ') {
+                movementAttempted = true;
+                checkMovementDuringBossLook();
+            }
+            checkObjectCollision();
+            checkDoorCollision();
+        });
+
+        notesButton.addEventListener('click', () => {
+            if (notesList.style.display === 'none') {
+                notesList.style.display = 'block';
+                notesList.innerHTML = '<h3>Collected Notes</h3><ul>' + collectedNotes.map(note => `<li>${note}</li>`).join('') + '</ul>';
+            } else {
+                notesList.style.display = 'none';
+            }
+        });
+
+        pauseButton.addEventListener('click', () => {
+            gamePaused = !gamePaused;
+            pauseScreen.style.display = gamePaused ? 'flex' : 'none';
+        });
+
+        resetButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        function toggleCharacter() {
+            if (characterState === 'fire') {
+                characterState = 'water';
+                character.classList.remove('fire');
+                character.classList.add('water');
+            } else {
+                characterState = 'fire';
+                character.classList.remove('water');
+                character.classList.add('fire');
+            }
+        }
+
+        function updateCharacterPosition() {
+            character.style.left = characterX + 'px';
+            character.style.top = characterY + 'px';
+        }
+
+        function createRandomObjects(level) {
+            levelContainer.innerHTML = '';
+            const numberOfObjects = 3;
+            const objects = [];
+
+            for (let i = 0; i < numberOfObjects; i++) {
+                let object;
+                let overlapping;
+
+                do {
+                    overlapping = false;
+                    object = {
+                        element: document.createElement('div'),
+                        top: Math.random() * (window.innerHeight - 50),
+                        left: Math.random() * (window.innerWidth - 200)
+                    };
+
+                    objects.forEach(existingObject => {
+                        if (
+                            Math.abs(existingObject.top - object.top) < 50 &&
+                            Math.abs(existingObject.left - object.left) < 50
+                        ) {
+                            overlapping = true;
+                        }
+                    });
+                } while (overlapping);
+
+                object.element.classList.add('object');
+                object.element.style.top = object.top + 'px';
+                object.element.style.left = object.left + 'px';
+                levelContainer.appendChild(object.element);
+                objects.push(object);
+            }
+        }
+
+        function showSecretPathScreen() {
+            secretPathScreen.style.display = 'flex';
+        }
+
+        function showFinalCongratsScreen() {
+            congratsScreen.style.display = 'flex';
+        }
+
+        nextLevelConfirmButton.addEventListener('click', () => {
+            currentLevel++;
+            nextLevelScreen.style.display = 'none';
+            if (currentLevel <= 3) {
+                loadLevel(currentLevel);
+            } else {
+                if (collectedNotes.length === 9) {
+                    if (characterState === 'fire') {
+                        showSecretEnd();
+                    } else if (characterState === 'water') {
+                        showJournalEnd();
+                    }
+                } else if (characterState === 'water') {
+                    jumpscare();
+                }
+                else{
+                    alert("Congratulations I guess. You have completed all levels. I'll get you next time.");
+                    window.location.reload();
+                }
+            }
+        });
+
+
+        exitButtonNextLevel.addEventListener('click', () => {
+            if (confirm("Where do you think you're going?")) {
+                window.close();
+            }
+        });
+
+        congratsRetryButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        congratsExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        continueSecretPathButton.addEventListener('click', () => {
+            secretPathScreen.style.display = 'none';
+            journalScreen.style.display = 'flex';
+        });
+
+        secretPathTryAgainButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        secretPathExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        journalContinueButton.addEventListener('click', () => {
+            journalScreen.style.display = 'none';
+            startScreen.style.display = 'flex';
+        });
+
+        journalTryAgainButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        journalExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        restartButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        tryAgainButton.addEventListener('click', () => {
+            resetCurrentLevelNotes();
+            loadLevel(currentLevel);
+            gameOverScreen.style.display = 'none';
+            resetGameOverConditions();
+        });
+
+        exitButtonGameOver.addEventListener('click', () => {
+            if (confirm('Are you sure you want to exit?')) {
+                window.close();
+            }
+        });
+
+        
+        function loadLevel(level) {
+            characterX = 100;
+            characterY = 100;
+            updateCharacterPosition();
+
+            createRandomObjects(level);
+
+            door.style.top = '400px';
+            door.style.left = '800px'; // Keep door position constant
+
+            door.className = 'door';
+            levelContainer.appendChild(door);
+
+            boss.style.background = "url('turbositting.png') no-repeat center center / cover"; // Boss starts as purple
+            boss.style.right = '10px';
+            boss.style.top = '50%';
+            boss.style.transform = 'translateY(-50%)';
+
+            levelIndicator.textContent = `Level: ${level}`;
+
+            setTimeout(startBossBehavior, 5000); // Boss is purple for the first 5 seconds
+        }
+
+        function resetCurrentLevelNotes() {
+            collectedNotes = collectedNotes.filter(note => !note.includes(`Too many voices`));
+            notesList.innerHTML = '<h3>Collected Notes</h3><ul>' + collectedNotes.map(note => `<li>${note}</li>`).join('') + '</ul>';
+        }
+
+        resumeButton.addEventListener('click', () => {
+            gamePaused = false;
+            pauseScreen.style.display = 'none';
+        });
+
+        exitButtonPause.addEventListener('click', () => {
+            if (confirm('Are you sure you want to exit?')) {
+                window.close();
+            }
+        });
+
+        function startBossBehavior() {
+            const interval = Math.random() * (20000 - 5000) + 5000; // Random interval between 5-20 seconds
+            bossTimeout = setTimeout(() => {
+                if (bossLooking) {
+                    boss.style.background = "url('turbositting.png') no-repeat center center / cover"; // Boss looking away
+                    bossLooking = false;
+                    startBossBehavior(); // Continue the behavior
+                } else {
+                    boss.style.background = "url('turbostanding.webp') no-repeat center center / cover"; // Boss looking at player
+                    bossLooking = true;
+                    movementAttempted = false; // Reset movement attempt
+                    bossDurationTimeout = setTimeout(() => {
+                        boss.style.background = "url('turbositting.png') no-repeat center center / cover"; // Boss stops looking at player
+                        bossLooking = false;
+                        startBossBehavior(); // Continue the behavior
+                    }, Math.random() * (15000 - 5000) + 5000); // Random duration between 5-15 seconds
+                }
+            }, interval);
+        }
+
+        function checkMovementDuringBossLook() {
+            if (movementAttempted) {
+                clearTimeout(bossTimeout);
+                clearTimeout(bossDurationTimeout);
+                gameOverScreen.style.display = 'flex';
+                bossLooking = false;
+                document.removeEventListener('keydown', handleKeydown);
+            }
+        }
+
+        function resetGameOverConditions() {
+            movementAttempted = false;
+            document.addEventListener('keydown', handleKeydown);
+        }
+
+        function handleKeydown(event) {
+            if (gamePaused) return;
+
+            switch (event.key) {
+                case 'ArrowLeft':
+                    characterX -= 20; // Increase speed
+                    break;
+                case 'ArrowRight':
+                    characterX += 20; // Increase speed
+                    break;
+                case 'ArrowUp':
+                    characterY -= 20; // Increase speed
+                    break;
+                case 'ArrowDown':
+                    characterY += 20; // Increase speed
+                    break;
+                case ' ':
+                    toggleCharacter();
+                    break;
+            }
+            updateCharacterPosition();
+            if (bossLooking && event.key !== ' ') {
+                movementAttempted = true;
+                checkMovementDuringBossLook();
+            }
+            checkObjectCollision();
+            checkDoorCollision();
+        }
+
+        document.addEventListener('keydown', handleKeydown);
+
+        function collectNote() {
+            collectedNotes.push(`Note from Level ${currentLevel}`);
+            notesList.innerHTML = '<h3>Collected Notes</h3><ul>' + collectedNotes.map(note => `<li>${note}</li>`).join('') + '</ul>';
+            checkAllNotesCollected();
+        }
+
+        function checkAllNotesCollected() {
+            if (collectedNotes.length === 9) {
+                if (currentLevel === 3) {
+                    if (characterState === 'fire') {
+                        showSecretEnd();
+                    } else if (characterState === 'water') {
+                        showJournalEnd();
+                    }
+                }
+            }
+        }
+
+        function showSecretEnd() {
+            gameContainer.style.display = 'none';
+            secretEndScreen.style.display = 'flex';
+        }
+
+        function showJournalEnd() {
+            gameContainer.style.display = 'none';
+            journalEndScreen.style.display = 'flex';
+        }
+
+        function jumpscare() {
+            gameContainer.style.display = 'none';
+            finalScreen.style.display = 'flex';
+            screaming.play()
+        }
+
+        secretRestartButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        secretExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        journalRestartButton.addEventListener('click', () => {
+            window.location.reload();
+        });
+
+        journalEndExitButton.addEventListener('click', () => {
+            window.close();
+        });
+
+        function checkObjectCollision() {
+            const objects = document.querySelectorAll('.object');
+            objects.forEach(object => {
+                const rect1 = character.getBoundingClientRect();
+                const rect2 = object.getBoundingClientRect();
+
+                if (
+                    rect1.left < rect2.left + rect2.width &&
+                    rect1.left + rect1.width > rect2.left &&
+                    rect1.top < rect2.top + rect2.height &&
+                    rect1.top + rect1.height > rect2.top
+                ) {
+                    object.remove();
+                    collectNote();
+                }
+            });
+        }
+
+        function checkDoorCollision() {
+            const rect1 = character.getBoundingClientRect();
+            const rect2 = door.getBoundingClientRect();
+
+            if (
+                rect1.left < rect2.left + rect2.width &&
+                rect1.left + rect1.width > rect2.left &&
+                rect1.top < rect2.top + rect2.height &&
+                rect1.top + rect1.height > rect2.top
+            ) {
+                if (currentLevel === 3 && collectedNotes.length === 9) {
+                    if (characterState === 'fire') {
+                        showSecretEnd();
+                    } else if (characterState === 'water') {
+                        showJournalEnd();
+                    }
+                } else {
+                    nextLevelScreen.style.display = 'flex';
+                }
+            }
+        }
+
+        loadLevel(currentLevel);
+        updateCharacterPosition();
+    </script>
+</body>
+</html>
