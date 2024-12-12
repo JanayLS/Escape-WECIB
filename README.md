@@ -5,9 +5,15 @@ Download the zip folder and extract the files. Run the HTML file called "EscapeW
 ![image](https://github.com/user-attachments/assets/79410d63-6c8e-4432-9686-6a42f3d19fea)
 
 
- <strong>Meet Ms.Kween<strong><br>
+## Meet Ms.Kween
  -------------------------------
-Your goal is to survive english class despite Ms.Kween's vicious attacks. Select a sprite and weapon. You can choose from 3 different attacks or you can defend. Defeat Ms.Kween and her hurtful words to survive one period of english class!
+Brace yourself for the ultimate classroom showdown! 
+
+Your mission: survive the brutal gauntlet of English class as Ms. Kween unleashes her relentless barrage of hurtful words and impossible timed essays. Select a sprite and arm yourself with a legendary weapon. Wield your weapon to unleash one of 3 epic attacks, or play it safe and defend against Ms. Kween’s verbal strikes. Stay sharp, stay strong, and take down Ms. Kween to conquer a full period of English chaos!
+
+Note: Make sure your sound is on!
+
+Game created by: Janay Snell
 
 _______________________________________________________________________________________________
 ## Good luck with Ms. Moose
@@ -15,6 +21,8 @@ Your goal is to attempt to have any of your issues solved by our dear counselor,
 Make sure you do whatever she is asking, there is no certainty she will be helping you though.
 
 There is no end scene or quiting button, so when done playing, just close the tab.
+
+Created by: Carolina Benhami
 _______________________________________________________________________________________________
 ## Hallway of Dead
 
