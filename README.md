@@ -80,17 +80,16 @@ Description:
 This game is a short visual novel experience where you take on the role of a student in Mr. McQueen's class.  The story unfolds through dialogue and a series of images displayed after a specific point in the story.
 
 How to Play:
-
-The story will begin with a short delay, displaying dialogue from Mr. McQueen.
-Click anywhere on the screen to progress through the dialogue.
-After a specific point in the story, a series of images will be displayed. Click anywhere on the screen to cycle through the images.
-The game will not automatically close after the final image and dialogue sequence and will be need to closed manually.
+- The story will begin with a short delay, displaying dialogue from Mr. McQueen.
+- Click anywhere on the screen to progress through the dialogue.
+- After a specific point in the story, a series of images will be displayed. Click anywhere on the screen to cycle through the images.
+- The game will not automatically close after the final image and dialogue sequence and will be need to closed manually.
 
 Additional Notes:
+- This game utilizes audio files. Ensure your sound is turned on.
 
-This game utilizes audio files. Ensure your sound is turned on.
-
-A web browser that supports HTML5 and JavaScript.
+Requirments:
+- A web browser that supports HTML5 and JavaScript.
 
 Credits:
 MaryElizabeth Chukwu
