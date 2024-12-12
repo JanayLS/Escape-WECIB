@@ -73,7 +73,7 @@ Throughout the game, you will find journal entries that provide deeper insights 
 
 Thank you for playing **Hallway of Dead**! Enjoy the game and uncover all its secrets.
 ____________________________________________________________________________________________
-## Mr.McQueen - A Visual Novel Experience
+## Mr.McQueen
 
 Description:
 
