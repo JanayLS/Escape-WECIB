@@ -1,6 +1,6 @@
 # Escape-WECIB<br><br>
 
-Download the zip folder and extract the files. Run the HTML file called "EscapeWECIB". Scroll down until you see four buttons listing the names of teachers, their corresponding job titles. Select one of them to begin.
+Download the zip folder and extract the files. Run the HTML file called "EscapeWECIB". Scroll down until you see four buttons listing the names of teachers and their corresponding job titles. Select one of them to begin.
 
 ![image](https://github.com/user-attachments/assets/79410d63-6c8e-4432-9686-6a42f3d19fea)
 
