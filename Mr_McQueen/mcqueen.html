@@ -1,0 +1,214 @@
+<!DOCTYPE html> 
+<html lang=en>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Room 255</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #000000;
+        }
+
+        .container {
+            position: relative;
+        }
+
+        .classroom {
+            z-index: 1;
+            position: relative;
+            max-width: 100%;
+        }
+
+        .dialogue {
+            z-index: 2;
+            position: absolute;
+            top: 85%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 80%;
+            display: none;
+        }
+
+        h1 {
+            z-index: 2;
+            position: absolute;
+            top: 86.5%;
+            left: 79.5%;
+            transform: translate(-50%, -50%);
+            max-width: 80%;
+            font-size: 10px;
+            display: none;
+        }
+
+        #dialogueText {
+            z-index: 2;
+            position: absolute;
+            top: 77%;
+            left: 15%;
+            display: none; /* Initially hidden */
+            max-width: 50%;
+            text-align: left;
+            font-family: sans-serif;
+            color: #3A3A50;
+            font-size: 12px;
+        }
+
+        h2 {
+            margin: 5px 0;
+        }
+
+        #finalImage, #finalImage1, #finalImage2, #finalImage3, #finalImage4, #finalImage5, #finalImage6 {
+            z-index: 2;
+            display: none; /* Initially hidden */
+            position: absolute;
+            top: 9%;
+            left: 34%;
+            max-width: 27%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img class="classroom" src="map.png" alt="Classroom Background">
+        <img class="dialogue" id="dialogue" src="guiMcqueen.png" alt="Dialogue">
+        <h1 id="dialogueTitle">Mr. McQueen</h1>
+        <div id="dialogueText"></div>
+        <div id="presentation">
+            <img id="finalImage" src="monday/Slide1.jpg" alt="Final Image">
+            <img id="finalImage1" src="monday/Slide2.jpg" alt="Final Image">
+            <img id="finalImage2" src="monday/Slide3.jpg" alt="Final Image">
+            <img id="finalImage3" src="monday/Slide4.jpg" alt="Final Image">
+            <img id="finalImage4" src="monday/Slide5.jpg" alt="Final Image">
+            <img id="finalImage5" src="monday/Slide6.jpg" alt="Final Image">
+            <img id="finalImage6" src="monday/Slide7.jpg" alt="Final Image">
+        </div>
+        
+        <audio id="audio" src="ddlc1.mp3" loop></audio>
+        <audio id="newAudio" src="sayonara.mp3" loop></audio>
+    </div>
+    <script>
+        setTimeout(() => {
+            document.getElementById('dialogue').style.display = 'block';
+            document.getElementById('dialogueTitle').style.display = 'block';
+            document.getElementById('audio').play(); // Play the first audio
+
+            // Dialogue text and logic
+            const dialogueArray = [
+                'Good morning class, <br> How was everyones weekend? <br><span style="font-size: small">I\'m sure it was too short...</span>',
+                'Well... you know what else was too short?!',
+                'The number of people who got an 100 on last week\'s lab...',
+                'With the lack of effort in submissions, I have decided that only the <span style="color: red">honor roll</span> will be allowed to play video games.',
+                '...','Your assignment was to create an inventory system in python for Trish\'s swap shop...',
+                'And submit it by the <span style="color: red">end of day</span> Friday.',
+                '3 of you haven\'t even opened the assignment yet and have already received an <span style="color: red">Automatic Zero</span>',
+                'Your program must have included... <br><span style="font-size: small">A correct header, main function, and it must do what it was intended to.</span>',
+                'Only 2 people got below 90.. 3 below 80, and 6 got below a 70.<br><br>... The rest of you <span style="color: red">FAILED</span> ',
+                '<span style="font-size: small">*looks at the ceiling*</span><br> but to those who always do what you are supposed to, this does not apply to you... <span style="font-size: small"> I\'m sorry you have to sit through this again.</span>',
+                'Now for the honor roll...',
+                '...','And that concludes the presentation.', 'Because no one was on the honor roll...',
+                'You all will get an <span style="color: red">Infinite Zero</span> that will carry out until you graduate.',
+                'And everyone\'s game privileges have been revoked for the entire year..',
+                'It\'s 2:00pm, so go ahead and sign out.<br><br>I will be seeing you all next year... Everyone will be repeating this course.','Goodbye.'
+            ];
+
+            const dialogueText = document.getElementById('dialogueText');
+            dialogueText.style.display = 'block';
+
+            let index = 0;
+            let imageSequenceStarted = false;
+
+            function showNextDialogue() {
+                dialogueText.innerHTML = `<h2>${dialogueArray[index]}</h2>`;
+
+                if (index === 2) { 
+                    document.getElementById('audio').pause(); // Stop the current audio
+                    document.getElementById('newAudio').play(); // Play the new audio
+
+                    document.addEventListener('click', startImageSequence, { once: true }); // Wait for user to click after 3rd dialogue
+                }
+
+                index++;
+                if (index >= dialogueArray.length) return; // Stop after all dialogues
+            }
+
+            function startImageSequence() {
+                if (imageSequenceStarted) return; // Ensure this only runs once
+                imageSequenceStarted = true;
+
+                // Hide dialogue elements
+                document.getElementById('dialogue').style.display = 'none';
+                document.getElementById('dialogueTitle').style.display = 'none';
+                dialogueText.style.display = 'none';
+
+                // Image sequence logic
+                const images = [
+                    'finalImage',
+                    'finalImage1',
+                    'finalImage2',
+                    'finalImage3',
+                    'finalImage4',
+                    'finalImage5',
+                    'finalImage6'
+                ];
+
+                let imageIndex = 0;
+                document.getElementById(images[imageIndex]).style.display = 'block'; // Show the first image
+
+                document.addEventListener('click', () => {
+                    if (imageIndex < images.length - 1) {
+                        document.getElementById(images[imageIndex]).style.display = 'none'; // Hide current image
+                        imageIndex++;
+                        document.getElementById(images[imageIndex]).style.display = 'block'; // Show next image
+
+                        // Show next dialogue after displaying finalImage1
+                        if (images[imageIndex] === 'finalImage1') {
+                            document.getElementById('dialogue').style.display = 'block';
+                            document.getElementById('dialogueTitle').style.display = 'block';
+                            dialogueText.style.display = 'block';
+                            dialogueText.innerHTML = `<h2>${dialogueArray[index]}</h2>`;
+                            index++;
+                        }
+                    } else {
+                        document.getElementById(images[imageIndex]).style.display = 'none'; // Hide the last image
+                    }
+                });
+            }
+
+            showNextDialogue();
+            document.addEventListener('click', () => {
+                if (index < dialogueArray.length) {
+                    showNextDialogue(); // Show the next dialogue on click
+                    flickerDialogue(); // Trigger the flicker effect on click
+                }
+            });
+        }, 1000);
+
+        // Function to make all dialogue elements disappear and reappear for 200ms
+        function flickerDialogue() {
+            const dialogueElements = [
+                document.getElementById('dialogue'),
+                document.getElementById('dialogueTitle'),
+                document.getElementById('dialogueText')
+            ];
+
+            // Hide elements
+            dialogueElements.forEach(element => {
+                element.style.display = 'none';
+            });
+
+            // Show elements again after 200ms
+            setTimeout(() => {
+                dialogueElements.forEach(element => {
+                    element.style.display = 'block';
+                });
+            }, 200);
+        }
+    </script>
+</body>
+</html> 
